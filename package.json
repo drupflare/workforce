@@ -9,7 +9,7 @@
 		"action"
 	],
 	"scripts": {
-		"typecheck": "bun run --cwd core typecheck && bun run --cwd action typecheck",
+		"typecheck": "bun run --cwd core typecheck && bun run --cwd core build && bun run --cwd action typecheck",
 		"test": "bun run --cwd core test && bun run --cwd action test",
 		"test:unit": "bun run --cwd core test:unit",
 		"test:e2e": "bun run --cwd core test:e2e",
