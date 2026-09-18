@@ -1,0 +1,105 @@
+name: workforce
+author: gmitch215
+description: Manage Cloudflare Workers, and give every pull request its own preview Worker
+branding:
+  icon: 'layers'
+  color: orange
+
+inputs:
+  apiToken:
+    description: 'Your Cloudflare API Token'
+    required: false
+  accountId:
+    description: 'Your Cloudflare Account ID'
+    required: false
+  command:
+    description: 'The workforce command (with arguments) to run. Several may be separated by newlines. When set, the preview modes are not used.'
+    required: false
+  preCommands:
+    description: 'Commands to execute before the main command'
+    required: false
+  postCommands:
+    description: 'Commands to execute after the main command'
+    required: false
+  workingDirectory:
+    description: 'The relative path commands should be run from'
+    required: false
+  quiet:
+    description: 'Suppress command output, defaults to `false`'
+    required: false
+    default: 'false'
+  environment:
+    description: 'The environment to act on'
+    required: false
+  secrets:
+    description: 'Environment variable names, separated by newlines, bound to the Worker as secrets. Values come from this workflow `env`.'
+    required: false
+  vars:
+    description: 'Environment variable names, separated by newlines, bound to the Worker as plain text. Values come from this workflow `env`.'
+    required: false
+  packageManager:
+    description: 'The package manager to use. One of `npm`, `pnpm`, `yarn` or `bun`.'
+    required: false
+  gitHubToken:
+    description: 'GitHub Token, used to read pull requests and to comment'
+    required: false
+
+  mode:
+    description: 'What to do when no `command` is given. One of `deploy`, `destroy` or `sweep`.'
+    required: false
+    default: 'deploy'
+  worker:
+    description: 'The name of the Worker these previews are made from'
+    required: false
+  config:
+    description: 'Path to the wrangler configuration to read bindings and compatibility settings from'
+    required: false
+  directory:
+    description: 'The directory holding the built Worker to upload'
+    required: false
+    default: 'dist'
+  nameTemplate:
+    description: 'How a preview Worker is named'
+    required: false
+    default: '{worker}-pr-{pr}'
+  ttl:
+    description: 'How long a preview may live regardless of the pull request state'
+    required: false
+    default: '7d'
+  staleAfter:
+    description: 'How long a pull request may go without an update before `sweep` removes its preview'
+    required: false
+    default: '14d'
+  access:
+    description: 'Put the preview behind Cloudflare Access'
+    required: false
+    default: 'false'
+  accessPolicyId:
+    description: 'An existing Access policy to attach instead of creating one'
+    required: false
+  cleanup:
+    description: 'Delete the preview Worker when the pull request closes'
+    required: false
+    default: 'true'
+  comment:
+    description: 'Comment the preview URL on the pull request'
+    required: false
+    default: 'true'
+
+outputs:
+  command-output:
+    description: 'The output of the command (from stdout)'
+  command-stderr:
+    description: 'The error output of the command (from stderr)'
+  deployment-url:
+    description: 'The URL of the deployment, when the run produced one'
+  worker-name:
+    description: 'The name of the Worker this run acted on'
+  version-id:
+    description: 'The version this run created, when it created one'
+  swept:
+    description: 'How many stale previews a `sweep` removed'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
