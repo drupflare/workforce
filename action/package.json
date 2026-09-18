@@ -1,0 +1,28 @@
+{
+	"name": "@drupflare/workforce-action",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"description": "GitHub Action for managing Cloudflare Workers with workforce",
+	"license": "MIT",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "ncc build src/index.ts -o dist --source-map --license licenses.txt",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"test": "WORKFORCE_ACTION_TEST=1 vitest run",
+		"prettier": "prettier --write .",
+		"prettier:check": "prettier --check ."
+	},
+	"dependencies": {
+		"@actions/core": "^2.0.0",
+		"@actions/github": "^9.0.0",
+		"@drupflare/workforce": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "^26.0.0",
+		"@vercel/ncc": "^0.38.4",
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.0"
+	},
+	"author": "Gregory Mitchell <me@gmitch215.xyz>"
+}
