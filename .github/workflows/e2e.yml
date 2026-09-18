@@ -38,8 +38,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: mocked
-    # a fork PR has no secrets and must not be handed any, so it is the only case excluded; a
-    # branch PR in this repository does have them and is worth running against
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     permissions:
@@ -53,8 +51,6 @@ jobs:
           bun-version: 'latest'
       - name: Install Dependencies
         run: bun install --frozen-lockfile
-      # the suite skips itself and says so when these are absent, so an unconfigured fork is not a
-      # failure; what it must never do is pass by silently running nothing
       - name: Run the Integration Suite
         env:
           FREE_CLOUDFLARE_ACCOUNT_ID: ${{ secrets.FREE_CLOUDFLARE_ACCOUNT_ID }}
