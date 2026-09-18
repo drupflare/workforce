@@ -69,9 +69,9 @@ jobs:
           bun-version: 'latest'
       - name: Install Dependencies
         run: bun install --frozen-lockfile
-      # a stale dist/ ships last week's code from a green pipeline, so rebuild and require no diff
       - name: Rebuild and Diff
         run: |
+          bun run --cwd core build
           bun run --cwd action build
           if ! git diff --quiet -- action/dist; then
             echo "::error::action/dist is stale. Run 'bun run --cwd action build' and commit the result." >&2
