@@ -13,7 +13,7 @@
 <h1>Interface BudgetOptions</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">BudgetOptions</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#assumedquota">assumedQuota</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#assumedwindowseconds">assumedWindowSeconds</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#concurrency">concurrency</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#now">now</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#reserve">reserve</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#sleep">sleep</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">ms</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/90c2a94a963e5732bad10ecc73e15808a40070d3/core/src/client/budget.ts#L26">core/src/client/budget.ts:26</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/client/budget.ts#L26">core/src/client/budget.ts:26</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -37,28 +37,28 @@
 <div class="tsd-comment tsd-typography"><p>the assumed allowance before any response has reported one</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/90c2a94a963e5732bad10ecc73e15808a40070d3/core/src/client/budget.ts#L37">core/src/client/budget.ts:37</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/client/budget.ts#L37">core/src/client/budget.ts:37</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="assumedwindowseconds"><code class="tsd-tag">Optional</code><span>assumed<wbr/>Window<wbr/>Seconds</span><a href="#assumedwindowseconds" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">assumedWindowSeconds</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>the assumed window before any response has reported one</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/90c2a94a963e5732bad10ecc73e15808a40070d3/core/src/client/budget.ts#L39">core/src/client/budget.ts:39</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/client/budget.ts#L39">core/src/client/budget.ts:39</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="concurrency"><code class="tsd-tag">Optional</code><span>concurrency</span><a href="#concurrency" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">concurrency</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>how many requests may be in flight at once</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/90c2a94a963e5732bad10ecc73e15808a40070d3/core/src/client/budget.ts#L35">core/src/client/budget.ts:35</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/client/budget.ts#L35">core/src/client/budget.ts:35</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="now"><code class="tsd-tag">Optional</code><span>now</span><a href="#now" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">now</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>injectable so tests do not wait in real time</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/90c2a94a963e5732bad10ecc73e15808a40070d3/core/src/client/budget.ts#L41">core/src/client/budget.ts:41</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/client/budget.ts#L41">core/src/client/budget.ts:41</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="reserve"><code class="tsd-tag">Optional</code><span>reserve</span><a href="#reserve" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">reserve</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -67,12 +67,12 @@
 fleet job runs. Set it to 0 to spend the whole allowance.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/90c2a94a963e5732bad10ecc73e15808a40070d3/core/src/client/budget.ts#L33">core/src/client/budget.ts:33</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/client/budget.ts#L33">core/src/client/budget.ts:33</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="sleep"><code class="tsd-tag">Optional</code><span>sleep</span><a href="#sleep" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">sleep</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">ms</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/90c2a94a963e5732bad10ecc73e15808a40070d3/core/src/client/budget.ts#L42">core/src/client/budget.ts:42</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/client/budget.ts#L42">core/src/client/budget.ts:42</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
