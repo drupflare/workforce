@@ -1,0 +1,316 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@drupflare/workforce - v0.1.0</title><meta name="description" content="Documentation for @drupflare/workforce"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="index.html" class="title">@drupflare/workforce - v0.1.0</a>
+<div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<h1>@drupflare/workforce - v0.1.0</h1></div>
+<div class="tsd-panel tsd-typography"><h1 id="🗄️-workforce" class="tsd-anchor-link">🗄️ workforce<a href="#🗄️-workforce" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<blockquote>
+<p>Management and fleet library for Cloudflare Workers</p>
+</blockquote>
+<p>workforce wraps the Cloudflare Workers management API and the operations built on top of it. You give
+it a credential and a target; it creates, updates, patches, forks, deletes, monitors, diagnoses and
+rolls back Workers, one at a time or a thousand at once.</p>
+<p>It runs on Node and inside a Worker. The second one is the point: a Worker can provision another
+Worker from its own assets, from a tarball, or from files it received over HTTP.</p>
+<h2 id="📖-table-of-contents" class="tsd-anchor-link">📖 Table of Contents<a href="#📖-table-of-contents" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li><a href="#-why-workforce">Why workforce</a></li>
+<li><a href="#-features">Features</a></li>
+<li><a href="#-install">Install</a></li>
+<li><a href="#-getting-started">Getting Started</a></li>
+<li><a href="#%EF%B8%8F-planes">Planes</a></li>
+<li><a href="#-sources">Sources</a></li>
+<li><a href="#-bindings">Bindings</a></li>
+<li><a href="#-secrets">Secrets</a></li>
+<li><a href="#%EF%B8%8F-assets">Assets</a></li>
+<li><a href="#-versions-and-deployments">Versions and Deployments</a></li>
+<li><a href="#%EF%B8%8F-revisions-diff-and-merge">Revisions, Diff and Merge</a></li>
+<li><a href="#-observability">Observability</a></li>
+<li><a href="#%EF%B8%8F-fleet">Fleet</a></li>
+<li><a href="#-environments">Environments</a></li>
+<li><a href="#%EF%B8%8F-access">Access</a></li>
+<li><a href="#-resources">Resources</a></li>
+<li><a href="#-storage">Storage</a></li>
+<li><a href="#-events">Events</a></li>
+<li><a href="#-error-handling">Error Handling</a></li>
+<li><a href="#-limitations">Limitations</a></li>
+<li><a href="#-api-reference">API Reference</a></li>
+<li><a href="#-contributing">Contributing</a></li>
+<li><a href="#-license">License</a></li>
+</ul>
+<h2 id="❓-why-workforce" class="tsd-anchor-link">❓ Why workforce<a href="#❓-why-workforce" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>The Cloudflare API is a REST surface, and everything above one Worker is left to the caller: paging,
+the request budget, which operations a dispatch namespace does not have, what a version can and
+cannot carry, and what happens to a fleet operation when the fortieth of five hundred fails.</p>
+<p>workforce is that layer. The official <code>cloudflare</code> SDK covers the whole API and unpacks to 65 MB
+across 16,289 files, which is not a dependency that belongs inside a Worker.</p>
+<h2 id="🧰-features" class="tsd-anchor-link">🧰 Features<a href="#🧰-features" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li>One interface over account-scoped Workers and Workers for Platforms, with a capability object
+saying what each cannot do and why</li>
+<li>A request governor that reads Cloudflare's own rate-limit headers and keeps a reserve, because the
+limit is account-wide and crossing it blocks the dashboard too</li>
+<li>Uploads from memory, a tarball, a GitHub template, an HTTP request, another Worker, a remote host
+over SFTP, or a directory</li>
+<li>Static asset sync where the manifest is the complete desired set, so an omission is a deletion</li>
+<li>Versions, gradual deployments, rollback, and four guards for the refusals the platform makes</li>
+<li>Optional version history: content-addressed frames, delta reuse, diff, three-way merge, revert</li>
+<li>Fleet operations with bounded concurrency, a readable plan, and resumable apply</li>
+<li>Runs under Node and inside a Worker, with no <code>node:</code> import outside the <code>/node</code> subpath</li>
+</ul>
+<h2 id="🚀-install" class="tsd-anchor-link">🚀 Install<a href="#🚀-install" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="sh"><span class="hl-0">bun</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">@drupflare/workforce</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">i</span><span class="hl-1"> </span><span class="hl-2">@drupflare/workforce</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="🏁-getting-started" class="tsd-anchor-link">🏁 Getting Started<a href="#🏁-getting-started" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">cloudflare</span><span class="hl-1">, </span><span class="hl-4">fromFiles</span><span class="hl-1">, </span><span class="hl-4">workforce</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">cf</span><span class="hl-1"> = </span><span class="hl-0">workforce</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">plane:</span><span class="hl-1"> </span><span class="hl-0">cloudflare</span><span class="hl-1">({</span><br/><span class="hl-1">    </span><span class="hl-4">accountId:</span><span class="hl-1"> </span><span class="hl-4">process</span><span class="hl-1">.</span><span class="hl-4">env</span><span class="hl-1">.</span><span class="hl-6">CLOUDFLARE_ACCOUNT_ID</span><span class="hl-1">!,</span><br/><span class="hl-1">    </span><span class="hl-4">token:</span><span class="hl-1"> </span><span class="hl-4">process</span><span class="hl-1">.</span><span class="hl-4">env</span><span class="hl-1">.</span><span class="hl-6">CLOUDFLARE_API_TOKEN</span><span class="hl-1">!</span><br/><span class="hl-1">  })</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;my-api&#39;</span><span class="hl-1">).</span><span class="hl-0">upload</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">source:</span><span class="hl-1"> </span><span class="hl-0">fromFiles</span><span class="hl-1">({</span><br/><span class="hl-1">    </span><span class="hl-2">&#39;index.js&#39;</span><span class="hl-4">:</span><span class="hl-1"> </span><span class="hl-2">&#39;export default { fetch: () =&gt; new Response(&quot;hello&quot;) };&#39;</span><br/><span class="hl-1">  }),</span><br/><span class="hl-1">  </span><span class="hl-4">metadata:</span><span class="hl-1"> { </span><span class="hl-4">compatibility_date:</span><span class="hl-1"> </span><span class="hl-2">&#39;2026-08-01&#39;</span><span class="hl-1"> }</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="✈️-planes" class="tsd-anchor-link">✈️ Planes<a href="#✈️-planes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>A plane is the executor. The operations are the same on each; what differs is declared rather than
+discovered.</p>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">cloudflare</span><span class="hl-1">, </span><span class="hl-4">dispatch</span><span class="hl-1">, </span><span class="hl-4">workforce</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">account</span><span class="hl-1"> = </span><span class="hl-0">workforce</span><span class="hl-1">({ </span><span class="hl-4">plane:</span><span class="hl-1"> </span><span class="hl-0">cloudflare</span><span class="hl-1">({ </span><span class="hl-4">accountId</span><span class="hl-1">, </span><span class="hl-4">token</span><span class="hl-1"> }) });</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">tenants</span><span class="hl-1"> = </span><span class="hl-0">workforce</span><span class="hl-1">({ </span><span class="hl-4">plane:</span><span class="hl-1"> </span><span class="hl-0">dispatch</span><span class="hl-1">({ </span><span class="hl-4">accountId</span><span class="hl-1">, </span><span class="hl-4">token</span><span class="hl-1">, </span><span class="hl-4">namespace:</span><span class="hl-1"> </span><span class="hl-2">&#39;tenants&#39;</span><span class="hl-1"> }) });</span><br/><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">account</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-0">upload</span><span class="hl-1">({ </span><span class="hl-4">source</span><span class="hl-1"> });</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">tenants</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;acme&#39;</span><span class="hl-1">).</span><span class="hl-0">upload</span><span class="hl-1">({ </span><span class="hl-4">source</span><span class="hl-1"> });</span><br/><br/><span class="hl-4">tenants</span><span class="hl-1">.</span><span class="hl-4">capabilities</span><span class="hl-1">.</span><span class="hl-4">versions</span><span class="hl-1">.</span><span class="hl-4">supported</span><span class="hl-1">; </span><span class="hl-7">// false</span><br/><span class="hl-4">tenants</span><span class="hl-1">.</span><span class="hl-4">capabilities</span><span class="hl-1">.</span><span class="hl-4">versions</span><span class="hl-1">.</span><span class="hl-4">reason</span><span class="hl-1">; </span><span class="hl-7">// why, and what to use instead</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Reaching for an unsupported operation throws a <code>CapabilityError</code> before any request is made.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>cloudflare</code></th>
+<th><code>dispatch</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>versions, deployments, rollback</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr>
+<td>subdomain, schedules, tails</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr>
+<td>assets, tags, analytics, Access</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>tags per script</td>
+<td>unlimited</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<h2 id="📦-sources" class="tsd-anchor-link">📦 Sources<a href="#📦-sources" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Everything that uploads takes a <code>ModuleSet</code>, which is a <code>Map&lt;string, Uint8Array&gt;</code> of path to bytes.</p>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">fromFiles</span><span class="hl-1">, </span><span class="hl-4">fromGitHub</span><span class="hl-1">, </span><span class="hl-4">fromRequest</span><span class="hl-1">, </span><span class="hl-4">fromTarball</span><span class="hl-1">, </span><span class="hl-4">fromAssets</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">fromDirectory</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce/node&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-0">fromFiles</span><span class="hl-1">({ </span><span class="hl-2">&#39;index.js&#39;</span><span class="hl-4">:</span><span class="hl-1"> </span><span class="hl-2">&#39;export default {}&#39;</span><span class="hl-1"> });</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">fromTarball</span><span class="hl-1">(</span><span class="hl-4">bytes</span><span class="hl-1">);</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">fromGitHub</span><span class="hl-1">(</span><span class="hl-2">&#39;drupflare/some-template&#39;</span><span class="hl-1">, { </span><span class="hl-4">ref:</span><span class="hl-1"> </span><span class="hl-2">&#39;main&#39;</span><span class="hl-1"> });</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">fromRequest</span><span class="hl-1">(</span><span class="hl-4">request</span><span class="hl-1">);</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">fromDirectory</span><span class="hl-1">(</span><span class="hl-2">&#39;./dist&#39;</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>fromAssets</code> reads the calling Worker's own assets, which is how a Worker provisions another Worker:</p>
+<pre><code class="ts"><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">source</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">fromAssets</span><span class="hl-1">(</span><span class="hl-4">env</span><span class="hl-1">.</span><span class="hl-6">ASSETS</span><span class="hl-1">, </span><span class="hl-2">&#39;/templates/manifest.json&#39;</span><span class="hl-1">, { </span><span class="hl-4">budget:</span><span class="hl-1"> </span><span class="hl-8">40</span><span class="hl-1"> });</span><br/><span class="hl-3">if</span><span class="hl-1"> (!</span><span class="hl-4">source</span><span class="hl-1">.</span><span class="hl-4">done</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-7">// resume from source.cursor on the next invocation</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p>The budget is there because an <code>ASSETS</code> binding spends one subrequest per file and the free plan
+allows fifty per invocation. When it runs out it hands back a cursor instead of failing.</p>
+<h2 id="🔌-bindings" class="tsd-anchor-link">🔌 Bindings<a href="#🔌-bindings" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-0">patchSettings</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">bindings:</span><span class="hl-1"> [{ </span><span class="hl-4">type:</span><span class="hl-1"> </span><span class="hl-2">&#39;kv_namespace&#39;</span><span class="hl-1">, </span><span class="hl-4">name:</span><span class="hl-1"> </span><span class="hl-2">&#39;CACHE&#39;</span><span class="hl-1">, </span><span class="hl-4">namespace_id:</span><span class="hl-1"> </span><span class="hl-4">id</span><span class="hl-1"> }]</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>A settings patch replaces the whole binding list, so naming two bindings would delete every other
+one. <code>patchSettings</code> reads the current list first and turns the rest into <code>inherit</code> entries.
+<code>replaceBindings</code> is there for a caller who means to replace them.</p>
+<h2 id="🔐-secrets" class="tsd-anchor-link">🔐 Secrets<a href="#🔐-secrets" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-4">secrets</span><span class="hl-1">.</span><span class="hl-0">put</span><span class="hl-1">(</span><span class="hl-2">&#39;API_KEY&#39;</span><span class="hl-1">, </span><span class="hl-4">value</span><span class="hl-1">);</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-4">secrets</span><span class="hl-1">.</span><span class="hl-0">putJson</span><span class="hl-1">(</span><span class="hl-2">&#39;CONFIG&#39;</span><span class="hl-1">, { </span><span class="hl-4">region:</span><span class="hl-1"> </span><span class="hl-2">&#39;enam&#39;</span><span class="hl-1"> });</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-4">secrets</span><span class="hl-1">.</span><span class="hl-0">list</span><span class="hl-1">(); </span><span class="hl-7">// names and types; the API never returns values</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="🗂️-assets" class="tsd-anchor-link">🗂️ Assets<a href="#🗂️-assets" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">result</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-4">assets</span><span class="hl-1">.</span><span class="hl-0">sync</span><span class="hl-1">(</span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">fromDirectory</span><span class="hl-1">(</span><span class="hl-2">&#39;./public&#39;</span><span class="hl-1">));</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-0">upload</span><span class="hl-1">({ </span><span class="hl-4">source</span><span class="hl-1">, </span><span class="hl-4">metadata:</span><span class="hl-1"> { </span><span class="hl-4">assets:</span><span class="hl-1"> { </span><span class="hl-4">jwt:</span><span class="hl-1"> </span><span class="hl-4">result</span><span class="hl-1">.</span><span class="hl-4">completionToken</span><span class="hl-1"> } } });</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>sync</code> takes the whole tree. A path absent from it is absent from the resulting version, which is the
+only way a rollout deletes a file, so there is deliberately no partial form.</p>
+<h2 id="🚦-versions-and-deployments" class="tsd-anchor-link">🚦 Versions and Deployments<a href="#🚦-versions-and-deployments" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">next</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-4">versions</span><span class="hl-1">.</span><span class="hl-0">create</span><span class="hl-1">({ </span><span class="hl-4">upload</span><span class="hl-1">, </span><span class="hl-4">message:</span><span class="hl-1"> </span><span class="hl-2">&#39;pr-412&#39;</span><span class="hl-1"> });</span><br/><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-4">versions</span><span class="hl-1">.</span><span class="hl-0">deploy</span><span class="hl-1">([</span><br/><span class="hl-1">  { </span><span class="hl-4">version:</span><span class="hl-1"> </span><span class="hl-4">next</span><span class="hl-1">.</span><span class="hl-4">id</span><span class="hl-1">, </span><span class="hl-4">percentage:</span><span class="hl-1"> </span><span class="hl-8">10</span><span class="hl-1"> },</span><br/><span class="hl-1">  { </span><span class="hl-4">version:</span><span class="hl-1"> </span><span class="hl-4">current</span><span class="hl-1">.</span><span class="hl-4">id</span><span class="hl-1">, </span><span class="hl-4">percentage:</span><span class="hl-1"> </span><span class="hl-8">90</span><span class="hl-1"> }</span><br/><span class="hl-1">]);</span><br/><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-4">versions</span><span class="hl-1">.</span><span class="hl-0">rollback</span><span class="hl-1">(</span><span class="hl-4">previous</span><span class="hl-1">.</span><span class="hl-4">id</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Under a gradual deployment, requests to a given Durable Object use the same version for the life of
+that deployment. A ten percent split therefore puts roughly ten percent of OBJECTS wholly on the new
+code rather than ten percent of each object's requests.</p>
+<h2 id="🕰️-revisions-diff-and-merge" class="tsd-anchor-link">🕰️ Revisions, Diff and Merge<a href="#🕰️-revisions-diff-and-merge" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>The platform does not return a past version's code, so workforce keeps it when you give it a store.</p>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">RevisionStore</span><span class="hl-1">, </span><span class="hl-4">planRevert</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">hybridStore</span><span class="hl-1">, </span><span class="hl-4">r2Frames</span><span class="hl-1">, </span><span class="hl-4">d1Index</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce/store&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">store</span><span class="hl-1"> = </span><span class="hl-0">hybridStore</span><span class="hl-1">({ </span><span class="hl-4">frames:</span><span class="hl-1"> </span><span class="hl-0">r2Frames</span><span class="hl-1">(</span><span class="hl-4">env</span><span class="hl-1">.</span><span class="hl-6">FRAMES</span><span class="hl-1">), </span><span class="hl-4">index:</span><span class="hl-1"> </span><span class="hl-0">d1Index</span><span class="hl-1">(</span><span class="hl-4">env</span><span class="hl-1">.</span><span class="hl-6">DB</span><span class="hl-1">) });</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">revisions</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">RevisionStore</span><span class="hl-1">(</span><span class="hl-4">store</span><span class="hl-1">);</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">upload</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-0">upload</span><span class="hl-1">({ </span><span class="hl-4">source</span><span class="hl-1"> });</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">revisions</span><span class="hl-1">.</span><span class="hl-0">write</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">, </span><span class="hl-4">source</span><span class="hl-1">, { </span><span class="hl-4">versionId:</span><span class="hl-1"> </span><span class="hl-4">upload</span><span class="hl-1">.</span><span class="hl-4">versionId</span><span class="hl-1">, </span><span class="hl-4">etag:</span><span class="hl-1"> </span><span class="hl-4">upload</span><span class="hl-1">.</span><span class="hl-4">etag</span><span class="hl-1"> });</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">plan</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">planRevert</span><span class="hl-1">(</span><span class="hl-4">revisions</span><span class="hl-1">, </span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">, </span><span class="hl-4">someRevisionId</span><span class="hl-1">);</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">worker</span><span class="hl-1">(</span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">).</span><span class="hl-4">versions</span><span class="hl-1">.</span><span class="hl-0">create</span><span class="hl-1">({ </span><span class="hl-4">upload:</span><span class="hl-1"> </span><span class="hl-4">plan</span><span class="hl-1">.</span><span class="hl-4">upload</span><span class="hl-1">, </span><span class="hl-4">message:</span><span class="hl-1"> </span><span class="hl-4">plan</span><span class="hl-1">.</span><span class="hl-4">message</span><span class="hl-1"> });</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>rollback</code> re-points the deployment at a version the platform still holds; no new version appears.
+<code>revert</code> uploads old content as a NEW version and deploys that. Different operations, named apart.</p>
+<p>Content is framed at 16 KiB and addressed by digest, so an edit stores the frames it touched rather
+than the whole bundle.</p>
+<h2 id="🔭-observability" class="tsd-anchor-link">🔭 Observability<a href="#🔭-observability" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">Observability</span><span class="hl-1">, </span><span class="hl-4">summariseCpu</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">obs</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">Observability</span><span class="hl-1">(</span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-4">raw</span><span class="hl-1">, </span><span class="hl-4">accountId</span><span class="hl-1">);</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">events</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">obs</span><span class="hl-1">.</span><span class="hl-0">query</span><span class="hl-1">({ </span><span class="hl-4">from:</span><span class="hl-1"> </span><span class="hl-4">Date</span><span class="hl-1">.</span><span class="hl-0">now</span><span class="hl-1">() - </span><span class="hl-8">3_600_000</span><span class="hl-1">, </span><span class="hl-4">to:</span><span class="hl-1"> </span><span class="hl-4">Date</span><span class="hl-1">.</span><span class="hl-0">now</span><span class="hl-1">() });</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">report</span><span class="hl-1"> = </span><span class="hl-0">summariseCpu</span><span class="hl-1">(</span><span class="hl-4">events</span><span class="hl-1">);</span><br/><span class="hl-3">if</span><span class="hl-1"> (</span><span class="hl-4">report</span><span class="hl-1">.</span><span class="hl-4">instrumentFailure</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-7">// the capture is not usable; see report.notes</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Prefer the query API over tail. <code>wrangler tail --format json</code> has been measured returning stateless
+events and zero durable-object events for invocations the query API reported in full, so
+<code>summariseCpu</code> reports a capture in that shape as a broken instrument rather than as a reading.</p>
+<h2 id="🛰️-fleet" class="tsd-anchor-link">🛰️ Fleet<a href="#🛰️-fleet" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">mapFleet</span><span class="hl-1">, </span><span class="hl-4">planFleet</span><span class="hl-1">, </span><span class="hl-4">applyPlan</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">workers</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-0">list</span><span class="hl-1">();</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">result</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">mapFleet</span><span class="hl-1">(</span><span class="hl-4">workers</span><span class="hl-1">, (</span><span class="hl-4">w</span><span class="hl-1">) </span><span class="hl-5">=&gt;</span><span class="hl-1"> </span><span class="hl-4">w</span><span class="hl-1">.</span><span class="hl-0">patchSettings</span><span class="hl-1">({ </span><span class="hl-4">bindings</span><span class="hl-1"> }), { </span><span class="hl-4">concurrency:</span><span class="hl-1"> </span><span class="hl-8">8</span><span class="hl-1"> });</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">plan</span><span class="hl-1"> = </span><span class="hl-0">planFleet</span><span class="hl-1">(</span><span class="hl-4">desired</span><span class="hl-1">, </span><span class="hl-4">actual</span><span class="hl-1">);</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">report</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">applyPlan</span><span class="hl-1">(</span><span class="hl-4">plan</span><span class="hl-1">, </span><span class="hl-5">async</span><span class="hl-1"> (</span><span class="hl-4">action</span><span class="hl-1">) </span><span class="hl-5">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-7">// perform the action here</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>A fleet operation finishes and reports rather than stopping at the first failure, and <code>applyPlan</code>
+hands back a cursor when its action budget runs out.</p>
+<h2 id="🌱-environments" class="tsd-anchor-link">🌱 Environments<a href="#🌱-environments" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">planFork</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">plan</span><span class="hl-1"> = </span><span class="hl-0">planFork</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">source:</span><span class="hl-1"> </span><span class="hl-2">&#39;api&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">target:</span><span class="hl-1"> </span><span class="hl-2">&#39;api-dev&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">modules</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">durableObjects:</span><span class="hl-1"> </span><span class="hl-2">&#39;fresh&#39;</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>fresh</code> gives the fork its own empty Durable Object namespaces, <code>shared</code> points its bindings at the
+source's, and <code>transfer</code> MOVES them and needs an explicit confirmation. A fork never carries secrets,
+because the API does not return their values; <code>plan.secretsNotCarried</code> names the ones you still owe.</p>
+<h2 id="🛡️-access" class="tsd-anchor-link">🛡️ Access<a href="#🛡️-access" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">Access</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">Access</span><span class="hl-1">(</span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-4">raw</span><span class="hl-1">, </span><span class="hl-4">accountId</span><span class="hl-1">).</span><span class="hl-0">ensure</span><span class="hl-1">({ </span><span class="hl-4">name:</span><span class="hl-1"> </span><span class="hl-2">&#39;preview&#39;</span><span class="hl-1">, </span><span class="hl-4">workerId</span><span class="hl-1"> });</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Worker-level Access covers every hostname a Worker is reached by, including its <code>workers.dev</code> one,
+and needs no zone.</p>
+<h2 id="🧱-resources" class="tsd-anchor-link">🧱 Resources<a href="#🧱-resources" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">Resources</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">resources</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">Resources</span><span class="hl-1">(</span><span class="hl-4">cf</span><span class="hl-1">.</span><span class="hl-4">raw</span><span class="hl-1">, </span><span class="hl-4">accountId</span><span class="hl-1">, { </span><span class="hl-4">plan:</span><span class="hl-1"> </span><span class="hl-2">&#39;free&#39;</span><span class="hl-1"> });</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">resources</span><span class="hl-1">.</span><span class="hl-0">createD1</span><span class="hl-1">(</span><span class="hl-2">&#39;tenant-acme&#39;</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>createD1</code> counts the account's databases first and refuses by name at the cap rather than relaying a
+quota error. The free plan allows ten.</p>
+<h2 id="💾-storage" class="tsd-anchor-link">💾 Storage<a href="#💾-storage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Providers take a binding and hold no state of their own:</p>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">d1Index</span><span class="hl-1">, </span><span class="hl-4">hybridStore</span><span class="hl-1">, </span><span class="hl-4">kvIndex</span><span class="hl-1">, </span><span class="hl-4">memoryStore</span><span class="hl-1">, </span><span class="hl-4">r2Frames</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce/store&#39;</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Frames belong in an object store and the index in a database, which is what <code>hybridStore</code> composes.
+The index is one small record per Worker, so it never outgrows a single D1 database.</p>
+<h2 id="🔔-events" class="tsd-anchor-link">🔔 Events<a href="#🔔-events" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">emit</span><span class="hl-1">, </span><span class="hl-4">memorySink</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@drupflare/workforce&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">sink</span><span class="hl-1"> = </span><span class="hl-0">memorySink</span><span class="hl-1">();</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">emit</span><span class="hl-1">(</span><span class="hl-4">sink</span><span class="hl-1">, {</span><br/><span class="hl-1">  </span><span class="hl-4">name:</span><span class="hl-1"> </span><span class="hl-2">&#39;worker.created&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">plane:</span><span class="hl-1"> </span><span class="hl-2">&#39;cloudflare&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">target:</span><span class="hl-1"> </span><span class="hl-4">accountId</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">subject:</span><span class="hl-1"> </span><span class="hl-2">&#39;api&#39;</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>workforce emits; it never decides what an event costs. A sink is optional and failures in one never
+fail the operation being described.</p>
+<h2 id="🧯-error-handling" class="tsd-anchor-link">🧯 Error Handling<a href="#🧯-error-handling" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Every refusal is a <code>WorkforceError</code> with a <code>kind</code>:</p>
+<table>
+<thead>
+<tr>
+<th>kind</th>
+<th>means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auth</code></td>
+<td>the credential was missing, malformed or rejected</td>
+</tr>
+<tr>
+<td><code>api</code></td>
+<td>the API answered and said no; <code>errors</code> carries its codes</td>
+</tr>
+<tr>
+<td><code>limit</code></td>
+<td>a rate limit or quota refused it; <code>retryAfterMs</code> when one was named</td>
+</tr>
+<tr>
+<td><code>not-found</code></td>
+<td>it is not there</td>
+</tr>
+<tr>
+<td><code>capability</code></td>
+<td>this plane cannot do this at all, and the reason says why</td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td>the call was refused before a request was made</td>
+</tr>
+<tr>
+<td><code>transport</code></td>
+<td>the request never produced a readable response</td>
+</tr>
+</tbody>
+</table>
+<p>A 200 carrying <code>success: false</code> is how this API reports a permission problem, so status alone is
+never the check.</p>
+<h2 id="🧗-limitations" class="tsd-anchor-link">🧗 Limitations<a href="#🧗-limitations" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li><strong>Preview URLs are not generated for a Worker implementing a Durable Object</strong>, nor for Workers for
+Platforms user Workers, and no preview URL serves logs. A managed per-preview Worker is the shape
+that works for every case.</li>
+<li><strong>A Worker version's content cannot be read back.</strong> Version endpoints return metadata and an etag.
+Diff and revert need a <code>RevisionStore</code>; without one they report themselves unavailable.</li>
+<li><strong>A version upload cannot carry a Durable Object lifecycle change</strong>, and a gradual deployment is
+not supported on a Worker configured with <code>exports</code>.</li>
+<li><strong>Only the 100 most recent versions are reachable</strong> for a rollback.</li>
+<li><strong>The API allows 1,200 requests per five minutes per user</strong>, counted across the dashboard and every
+token together. Crossing it blocks every call for five minutes.</li>
+<li><strong>A dispatch namespace script has no versions, deployments, subdomain, schedules or tails</strong>, and
+allows eight tags.</li>
+<li><strong><code>edgeport</code> is required only for the SSH and SFTP sources</strong>, is imported lazily, and works only on
+the Workers runtime.</li>
+</ul>
+<h2 id="📚-api-reference" class="tsd-anchor-link">📚 API Reference<a href="#📚-api-reference" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Generated docs: <a href="https://drupflare.github.io/workforce">https://drupflare.github.io/workforce</a>.</p>
+<h2 id="🧪-contributing" class="tsd-anchor-link">🧪 Contributing<a href="#🧪-contributing" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="sh"><span class="hl-0">bun</span><span class="hl-1"> </span><span class="hl-2">install</span><br/><span class="hl-0">bun</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">typecheck</span><br/><span class="hl-0">bun</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">test:unit</span><br/><span class="hl-0">bun</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">test:e2e</span><br/><span class="hl-0">bunx</span><span class="hl-1"> </span><span class="hl-2">prettier</span><span class="hl-1"> </span><span class="hl-5">--check</span><span class="hl-1"> </span><span class="hl-2">.</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>test:e2e</code> runs against a local plane over <code>wrangler dev</code>. <code>test:e2e:integration</code> runs the same specs
+against Cloudflare and needs <code>FREE_CLOUDFLARE_ACCOUNT_ID</code> and <code>FREE_CLOUDFLARE_API_TOKEN</code>.</p>
+<h2 id="📝-license" class="tsd-anchor-link">📝 License<a href="#📝-license" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>MIT. See <a href="media/LICENSE">LICENSE</a>.</p>
+</div></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>On This Page</h3></summary>
+<div class="tsd-accordion-details"><a href="#🗄️-workforce"><span>🗄️ workforce</span></a>
+<ul>
+<li><a href="#📖-table-of-contents"><span>📖 <wbr/>Table of <wbr/>Contents</span></a></li>
+<li><a href="#❓-why-workforce"><span>❓ <wbr/>Why workforce</span></a></li>
+<li><a href="#🧰-features"><span>🧰 <wbr/>Features</span></a></li>
+<li><a href="#🚀-install"><span>🚀 <wbr/>Install</span></a></li>
+<li><a href="#🏁-getting-started"><span>🏁 <wbr/>Getting <wbr/>Started</span></a></li>
+<li><a href="#✈️-planes"><span>✈️ <wbr/>Planes</span></a></li>
+<li><a href="#📦-sources"><span>📦 <wbr/>Sources</span></a></li>
+<li><a href="#🔌-bindings"><span>🔌 <wbr/>Bindings</span></a></li>
+<li><a href="#🔐-secrets"><span>🔐 <wbr/>Secrets</span></a></li>
+<li><a href="#🗂️-assets"><span>🗂️ <wbr/>Assets</span></a></li>
+<li><a href="#🚦-versions-and-deployments"><span>🚦 <wbr/>Versions and <wbr/>Deployments</span></a></li>
+<li><a href="#🕰️-revisions-diff-and-merge"><span>🕰️ <wbr/>Revisions, <wbr/>Diff and <wbr/>Merge</span></a></li>
+<li><a href="#🔭-observability"><span>🔭 <wbr/>Observability</span></a></li>
+<li><a href="#🛰️-fleet"><span>🛰️ <wbr/>Fleet</span></a></li>
+<li><a href="#🌱-environments"><span>🌱 <wbr/>Environments</span></a></li>
+<li><a href="#🛡️-access"><span>🛡️ <wbr/>Access</span></a></li>
+<li><a href="#🧱-resources"><span>🧱 <wbr/>Resources</span></a></li>
+<li><a href="#💾-storage"><span>💾 <wbr/>Storage</span></a></li>
+<li><a href="#🔔-events"><span>🔔 <wbr/>Events</span></a></li>
+<li><a href="#🧯-error-handling"><span>🧯 <wbr/>Error <wbr/>Handling</span></a></li>
+<li><a href="#🧗-limitations"><span>🧗 <wbr/>Limitations</span></a></li>
+<li><a href="#📚-api-reference"><span>📚 <wbr/>API <wbr/>Reference</span></a></li>
+<li><a href="#🧪-contributing"><span>🧪 <wbr/>Contributing</span></a></li>
+<li><a href="#📝-license"><span>📝 <wbr/>License</span></a></li></ul></div></details></div>
+<div class="site-menu">
+<nav class="tsd-navigation"><a href="modules.html">@drupflare/workforce - v0.1.0</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>
