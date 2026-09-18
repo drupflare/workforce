@@ -68,7 +68,7 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           PACKAGE=$(node -p "require('./package.json').name")
           NIGHTLY="${VERSION}-${GITHUB_SHA::7}"
-          npm version "$NIGHTLY" --no-git-tag-version
+          npm pkg set version="$NIGHTLY"
           echo "NIGHTLY=$NIGHTLY" >> "$GITHUB_ENV"
           echo "PACKAGE=$PACKAGE" >> "$GITHUB_ENV"
           echo "Publishing nightly $NIGHTLY" >> "$GITHUB_STEP_SUMMARY"
