@@ -1,0 +1,23 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": [
+		"core/src/index.ts",
+		"core/src/store/index.ts",
+		"core/src/revisions/merge.ts",
+		"core/src/node/index.ts"
+	],
+	"tsconfig": "core/tsconfig.build.json",
+	"out": "typedoc",
+	"name": "@drupflare/workforce",
+	"readme": "README.md",
+	"projectDocuments": ["ADVANCED_USAGE.md"],
+	"includeVersion": true,
+	"excludeInternal": true,
+	"excludePrivate": true,
+	"validation": {
+		"notExported": true,
+		"invalidLink": true,
+		"notDocumented": true
+	},
+	"treatWarningsAsErrors": false
+}
