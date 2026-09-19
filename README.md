@@ -210,6 +210,31 @@ await cf.worker('api').versions.create({ upload: plan.upload, message: plan.mess
 Content is framed at 16 KiB and addressed by digest, so an edit stores the frames it touched rather
 than the whole bundle.
 
+`diffModules` compares two module sets; `diffWorkers` adds bindings, compatibility date and flags,
+tags and secret names, and sets `contentUnavailable` when one side has no stored content.
+
+```ts
+import { diffModules } from '@drupflare/workforce';
+
+for (const file of diffModules(before, after)) {
+  if (file.change !== 'unchanged') console.log(file.change, file.path);
+}
+```
+
+Three-way merge lives behind its own subpath, so a Worker that never merges does not bundle it.
+Text merges line by line; binary files that both sides changed are reported as conflicts.
+
+```ts
+import { merge } from '@drupflare/workforce/merge';
+
+const result = merge(base, ours, theirs);
+if (!result.clean) {
+  for (const conflict of result.conflicts) {
+    // resolve conflict.path here; conflict.reason says why it could not merge
+  }
+}
+```
+
 ## 🔭 Observability
 
 ```ts
