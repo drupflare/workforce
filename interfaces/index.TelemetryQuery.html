@@ -13,7 +13,7 @@
 <h1>Interface TelemetryQuery</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">TelemetryQuery</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#dataset">dataset</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#filters">filters</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span><br/>        <span class="tsd-kind-property">key</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-property">operation</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-property">value</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#from">from</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#groupby">groupBy</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#limit">limit</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#to">to</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/observability.ts#L19">core/src/observability.ts:19</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/e08dbd96fdf972368308a797b404a233ea83af43/core/src/observability.ts#L19">core/src/observability.ts:19</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -37,36 +37,36 @@
 <div class="tsd-comment tsd-typography"><p>the dataset to read; Workers logs live in <code>cloudflare-workers</code></p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/observability.ts#L25">core/src/observability.ts:25</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/e08dbd96fdf972368308a797b404a233ea83af43/core/src/observability.ts#L25">core/src/observability.ts:25</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="filters"><code class="tsd-tag">Optional</code><span>filters</span><a href="#filters" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">filters</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">key</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">operation</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">value</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">boolean</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/observability.ts#L26">core/src/observability.ts:26</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/e08dbd96fdf972368308a797b404a233ea83af43/core/src/observability.ts#L26">core/src/observability.ts:26</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="from"><span>from</span><a href="#from" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">from</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>milliseconds since the epoch</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/observability.ts#L21">core/src/observability.ts:21</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/e08dbd96fdf972368308a797b404a233ea83af43/core/src/observability.ts#L21">core/src/observability.ts:21</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="groupby"><code class="tsd-tag">Optional</code><span>group<wbr/>By</span><a href="#groupby" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">groupBy</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>what to group by, for a count rather than a list</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/observability.ts#L28">core/src/observability.ts:28</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/e08dbd96fdf972368308a797b404a233ea83af43/core/src/observability.ts#L28">core/src/observability.ts:28</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="limit"><code class="tsd-tag">Optional</code><span>limit</span><a href="#limit" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">limit</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/observability.ts#L23">core/src/observability.ts:23</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/e08dbd96fdf972368308a797b404a233ea83af43/core/src/observability.ts#L23">core/src/observability.ts:23</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="to"><span>to</span><a href="#to" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">to</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/8dead046b7dae9040bbb0e31bdc0b79750e194ad/core/src/observability.ts#L22">core/src/observability.ts:22</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/e08dbd96fdf972368308a797b404a233ea83af43/core/src/observability.ts#L22">core/src/observability.ts:22</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
