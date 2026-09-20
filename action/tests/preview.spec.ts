@@ -1,6 +1,7 @@
+import { cloudflare, fromFiles, workforce } from '@drupflare/workforce';
 import { describe, expect, it } from 'vitest';
 import { collectFromEnv } from '../src/index.js';
-import { previewTags, readPreviewTags } from '../src/preview.js';
+import { deployPreview, previewTags, readPreviewTags } from '../src/preview.js';
 
 describe('previewTags', () => {
 	it('writes the two a sweep later reads', () => {
@@ -49,5 +50,48 @@ describe('collectFromEnv', () => {
 
 	it('is empty for an empty list', () => {
 		expect(collectFromEnv([], { A: '1' })).toEqual({});
+	});
+});
+
+describe('deployPreview', () => {
+	function client(subdomain: Record<string, unknown>) {
+		const seen: string[] = [];
+		const fetch = async (input: string | URL | Request): Promise<Response> => {
+			const url = String(input);
+			seen.push(url);
+			const body = (result: unknown) =>
+				new Response(JSON.stringify({ success: true, errors: [], messages: [], result }), {
+					headers: { 'content-type': 'application/json' }
+				});
+			if (url.endsWith('/accounts/acct/workers/subdomain')) return body(subdomain);
+			if (url.endsWith('/subdomain')) return body({ enabled: true, previews_enabled: false });
+			return body({ id: 'api-pr-7', etag: 'e1' });
+		};
+		return {
+			seen,
+			workforce: workforce({ plane: cloudflare({ accountId: 'acct', token: 't', fetch }) })
+		};
+	}
+
+	const input = {
+		accountId: 'acct',
+		name: 'api-pr-7',
+		source: fromFiles({ 'index.js': 'export default {};' }),
+		ttlAtMs: 1,
+		pr: 7,
+		access: false,
+		accessPolicyId: null
+	};
+
+	it('returns the URL the preview actually answers on', async () => {
+		const { workforce: wf } = client({ subdomain: 'acme' });
+		const result = await deployPreview({ client: wf, ...input });
+		expect(result.url).toBe('https://api-pr-7.acme.workers.dev');
+	});
+
+	it('reports no URL when the account has no subdomain, rather than a broken one', async () => {
+		const { workforce: wf } = client({});
+		const result = await deployPreview({ client: wf, ...input });
+		expect(result.url).toBeNull();
 	});
 });

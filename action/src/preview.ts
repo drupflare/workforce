@@ -81,6 +81,7 @@ export async function deployPreview(input: DeployInput): Promise<DeployResult> {
 	const routing = new Routing(input.client.plane.http, input.accountId);
 	// exactly one URL: the subdomain on, and the per-version preview URLs off
 	const subdomain = await routing.setSubdomain(input.name, { enabled: true, previews: false });
+	const host = subdomain.enabled ? await routing.hostname(input.name) : null;
 
 	let accessAppId: string | null = null;
 	if (input.access) {
@@ -98,7 +99,7 @@ export async function deployPreview(input: DeployInput): Promise<DeployResult> {
 
 	return {
 		name: input.name,
-		url: subdomain.enabled ? null : null,
+		url: host === null ? null : `https://${host}`,
 		versionId: uploaded.versionId,
 		accessAppId
 	};
