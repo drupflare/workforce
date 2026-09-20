@@ -29,6 +29,7 @@ Worker from its own assets, from a tarball, or from files it received over HTTP.
 - [Resources](#-resources)
 - [Storage](#-storage)
 - [Events](#-events)
+- [GitHub Action](#-github-action)
 - [Error Handling](#-error-handling)
 - [Limitations](#-limitations)
 - [API Reference](#-api-reference)
@@ -336,6 +337,93 @@ await emit(sink, {
 
 workforce emits; it never decides what an event costs. A sink is optional and failures in one never
 fail the operation being described.
+
+## 🤖 GitHub Action
+
+The Action gives every pull request its own preview Worker. Previews are always managed Workers:
+Cloudflare generates no preview URL for a Worker implementing a Durable Object, and serves no logs
+for any preview URL, so a named Worker is the only shape that works for every case.
+
+```yaml
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, closed]
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+      - run: npm ci && npm run build
+      - uses: drupflare/workforce/action@v0.1.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          worker: api
+          directory: dist
+          mode: ${{ github.event_name == 'schedule' && 'sweep' || github.event.action == 'closed' && 'destroy' || 'deploy' }}
+```
+
+### Routing
+
+A preview is named from `nameTemplate`, which defaults to `{worker}-pr-{pr}`, and is reachable on the
+account's `workers.dev` subdomain:
+
+```
+https://{worker}-pr-{pr}.{account-subdomain}.workers.dev
+```
+
+Worker `api` on pull request 7, under an account whose subdomain is `acme`, answers on
+`https://api-pr-7.acme.workers.dev`. The Action enables that hostname and turns per-version preview
+URLs off, so each preview has exactly one URL. Set `access: true` to put Cloudflare Access in front
+of it.
+
+### Modes
+
+`mode` runs when no `command` is given.
+
+| mode      | when                                  | what it does                                                                            |
+| --------- | ------------------------------------- | --------------------------------------------------------------------------------------- |
+| `deploy`  | `pull_request` opened or synchronized | uploads the preview, writes the `wf:pr` and `wf:ttl` tags, comments the URL             |
+| `destroy` | `pull_request` closed                 | deletes the Worker and the Access application covering it                               |
+| `sweep`   | `schedule`                            | deletes previews whose pull request is closed or untouched for longer than `staleAfter` |
+
+Inactivity is measured from the pull request's `updated_at`, which arrives for every open pull
+request in one call. `wf:ttl` is written at creation and honoured whether or not the sweep runs.
+
+### Inputs
+
+`apiToken`, `accountId`, `command`, `preCommands`, `postCommands`, `workingDirectory`, `quiet`,
+`environment`, `secrets`, `vars`, `packageManager` and `gitHubToken` carry the same meaning as in
+`cloudflare/wrangler-action`, so a workflow converts by changing the `uses:` line. Kebab-case
+spellings are accepted too.
+
+| input            | default            | what it sets                                                                |
+| ---------------- | ------------------ | --------------------------------------------------------------------------- |
+| `mode`           | `deploy`           | which preview operation to run                                              |
+| `worker`         |                    | the Worker previews are made from                                           |
+| `directory`      | `dist`             | the built Worker to upload                                                  |
+| `nameTemplate`   | `{worker}-pr-{pr}` | how a preview is named                                                      |
+| `ttl`            | `7d`               | how long a preview may live regardless of the pull request                  |
+| `staleAfter`     | `14d`              | how long a pull request may go untouched before `sweep` removes its preview |
+| `access`         | `false`            | put the preview behind Cloudflare Access                                    |
+| `accessPolicyId` |                    | an existing Access policy to attach instead of creating one                 |
+| `cleanup`        | `true`             | delete the preview when the pull request closes                             |
+| `comment`        | `true`             | comment the preview URL on the pull request                                 |
+
+Outputs are `command-output`, `command-stderr`, `deployment-url`, `worker-name`, `version-id` and
+`swept`.
+
+`secrets` and `vars` are newline-separated variable NAMES whose values come from the workflow's own
+`env`. Values are never logged.
 
 ## 🧯 Error Handling
 
