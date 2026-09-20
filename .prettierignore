@@ -5,3 +5,4 @@ bun.lock
 .husky/
 typedoc/
 action/dist/
+.remember/
