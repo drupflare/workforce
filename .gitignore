@@ -6,3 +6,6 @@ typedoc
 .wrangler
 *.tsbuildinfo
 .DS_Store
+# npm packs only from the package directory, so prepack copies these in from the repo root
+core/LICENSE
+core/README.md
