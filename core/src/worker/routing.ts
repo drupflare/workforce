@@ -82,6 +82,20 @@ export class Routing {
 		};
 	}
 
+	/** the account's `workers.dev` name, which every subdomain-enabled Worker sits under */
+	async accountSubdomain(): Promise<string | null> {
+		const result = await this.http.request<{ subdomain?: string }>(
+			`/accounts/${this.accountId}/workers/subdomain`
+		);
+		return result.subdomain ?? null;
+	}
+
+	/** where a subdomain-enabled Worker answers, or null when the account has no subdomain yet */
+	async hostname(name: string): Promise<string | null> {
+		const account = await this.accountSubdomain();
+		return account === null ? null : `${name}.${account}.workers.dev`;
+	}
+
 	async schedules(name: string): Promise<Schedule[]> {
 		const result = await this.http.request<{ schedules?: Schedule[] }>(
 			`${this.scriptBase(name)}/schedules`

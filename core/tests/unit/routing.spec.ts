@@ -35,6 +35,24 @@ describe('Routing subdomain', () => {
 		await r.setSubdomain('api', { enabled: true });
 		expect(JSON.parse(String(calls[0]?.body))).toEqual({ enabled: true });
 	});
+
+	describe('Routing hostname', () => {
+		it('reads the account subdomain', async () => {
+			const { routing: r, calls } = routing([{ body: envelope({ subdomain: 'gmitch215' }) }]);
+			expect(await r.accountSubdomain()).toBe('gmitch215');
+			expect(calls[0]?.url).toContain('/accounts/acct/workers/subdomain');
+		});
+
+		it('builds the hostname a subdomain-enabled Worker answers on', async () => {
+			const { routing: r } = routing([{ body: envelope({ subdomain: 'gmitch215' }) }]);
+			expect(await r.hostname('api-pr-7')).toBe('api-pr-7.gmitch215.workers.dev');
+		});
+
+		it('answers null when the account has no subdomain, rather than inventing a hostname', async () => {
+			const { routing: r } = routing([{ body: envelope({}) }]);
+			expect(await r.hostname('api')).toBeNull();
+		});
+	});
 });
 
 describe('Routing schedules', () => {
