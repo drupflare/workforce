@@ -5,3 +5,4 @@ coverage
 typedoc
 .wrangler
 *.tsbuildinfo
+.DS_Store
