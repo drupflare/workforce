@@ -1,13 +1,13 @@
 {
 	"name": "@drupflare/workforce-action",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"private": true,
 	"description": "GitHub Action for managing Cloudflare Workers with workforce",
 	"license": "MIT",
 	"main": "dist/index.js",
 	"scripts": {
-		"build": "ncc build src/index.ts -o dist --source-map --license licenses.txt",
+		"build": "ncc build src/index.ts -o dist --source-map --license licenses.txt && node scripts/sources.mjs --write",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"test": "WORKFORCE_ACTION_TEST=1 vitest run",
 		"prettier": "prettier --write .",

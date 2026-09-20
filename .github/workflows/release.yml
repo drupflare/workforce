@@ -31,6 +31,7 @@ jobs:
             exit 1
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "MAJOR=${VERSION%%.*}" >> $GITHUB_ENV
       - name: Retrieve Latest Tag
         id: latest_tag
         run: |
@@ -52,6 +53,12 @@ jobs:
           body: ${{ steps.changelog.outputs.changelog || github.event.inputs.changelog }}
           draft: false
           prerelease: ${{ github.ref_name != 'master' }}
+      - name: Update the v${{ env.MAJOR }} Tag
+        id: update-major-tag
+        if: ${{ env.MAJOR != '0' && github.event.inputs.suffix == '' && github.ref_name == 'master' }}
+        uses: actions/publish-action@v0.4.0
+        with:
+          source-tag: v${{ env.VERSION }}
 
   action-bundle:
     name: Verify the Action Bundle Is Current
@@ -63,21 +70,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 'latest'
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
-      - name: Rebuild and Diff
-        run: |
-          bun run --cwd core build
-          bun run --cwd action build
-          if ! git diff --quiet -- action/dist; then
-            echo "::error::action/dist is stale. Run 'bun run --cwd action build' and commit the result." >&2
-            git --no-pager diff --stat -- action/dist
-            exit 1
-          fi
+      - name: Verify Against the Recorded Sources
+        run: node action/scripts/sources.mjs --check
 
   publish:
     name: Publish
@@ -103,6 +97,7 @@ jobs:
             exit 1
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "MAJOR=${VERSION%%.*}" >> $GITHUB_ENV
           echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
       - name: Refuse to Publish an Untagged Version
         run: |
@@ -133,7 +128,7 @@ jobs:
         if: steps.suffix.outputs.skip == 'false'
         run: |
           bun run typecheck
-          bun run test:unit
+          bun run test
       - name: Build
         if: steps.suffix.outputs.skip == 'false'
         run: bun run --cwd core build
