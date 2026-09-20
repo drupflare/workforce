@@ -39784,6 +39784,14 @@ class Routing {
       previewsEnabled: result.previews_enabled ?? null
     };
   }
+  async accountSubdomain() {
+    const result = await this.http.request(`/accounts/${this.accountId}/workers/subdomain`);
+    return result.subdomain ?? null;
+  }
+  async hostname(name) {
+    const account = await this.accountSubdomain();
+    return account === null ? null : `${name}.${account}.workers.dev`;
+  }
   async schedules(name) {
     const result = await this.http.request(`${this.scriptBase(name)}/schedules`);
     return result.schedules ?? [];
@@ -39876,7 +39884,7 @@ function workforce(options) {
 }
 
 
-//# debugId=772E9DE38F9C3E6064756E2164756E21
+//# debugId=70936B282ABB9E1064756E2164756E21
 //# sourceMappingURL=index.js.map
 
 ;// CONCATENATED MODULE: external "node:fs/promises"
@@ -40074,6 +40082,7 @@ async function deployPreview(input) {
     const routing = new Routing(input.client.plane.http, input.accountId);
     // exactly one URL: the subdomain on, and the per-version preview URLs off
     const subdomain = await routing.setSubdomain(input.name, { enabled: true, previews: false });
+    const host = subdomain.enabled ? await routing.hostname(input.name) : null;
     let accessAppId = null;
     if (input.access) {
         const summary = await worker.get();
@@ -40089,7 +40098,7 @@ async function deployPreview(input) {
     }
     return {
         name: input.name,
-        url: subdomain.enabled ? null : null,
+        url: host === null ? null : `https://${host}`,
         versionId: uploaded.versionId,
         accessAppId
     };
