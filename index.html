@@ -1,5 +1,5 @@
-<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@drupflare/workforce - v0.1.0</title><meta name="description" content="Documentation for @drupflare/workforce"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
-<div class="tsd-toolbar-contents container"><a href="index.html" class="title">@drupflare/workforce - v0.1.0</a>
+<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@drupflare/workforce - v0.1.1</title><meta name="description" content="Documentation for @drupflare/workforce"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="index.html" class="title">@drupflare/workforce - v0.1.1</a>
 <div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
 <ul role="listbox" id="tsd-search-results"></ul>
 <div id="tsd-search-status" aria-live="polite" aria-atomic="true">
@@ -7,7 +7,7 @@
 <div class="container container-main">
 <div class="col-content">
 <div class="tsd-page-title">
-<h1>@drupflare/workforce - v0.1.0</h1></div>
+<h1>@drupflare/workforce - v0.1.1</h1></div>
 <div class="tsd-panel tsd-typography"><h1 id="🗄️-workforce" class="tsd-anchor-link">🗄️ workforce<a href="#🗄️-workforce" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
 <blockquote>
 <p>Management and fleet library for Cloudflare Workers</p>
@@ -37,6 +37,7 @@ Worker from its own assets, from a tarball, or from files it received over HTTP.
 <li><a href="#-resources">Resources</a></li>
 <li><a href="#-storage">Storage</a></li>
 <li><a href="#-events">Events</a></li>
+<li><a href="#-github-action">GitHub Action</a></li>
 <li><a href="#-error-handling">Error Handling</a></li>
 <li><a href="#-limitations">Limitations</a></li>
 <li><a href="#-api-reference">API Reference</a></li>
@@ -208,6 +209,123 @@ The index is one small record per Worker, so it never outgrows a single D1 datab
 
 <p>workforce emits; it never decides what an event costs. A sink is optional and failures in one never
 fail the operation being described.</p>
+<h2 id="🤖-github-action" class="tsd-anchor-link">🤖 GitHub Action<a href="#🤖-github-action" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>The Action gives every pull request its own preview Worker. Previews are always managed Workers:
+Cloudflare generates no preview URL for a Worker implementing a Durable Object, and serves no logs
+for any preview URL, so a named Worker is the only shape that works for every case.</p>
+<pre><code class="yaml"><span class="hl-9">name</span><span class="hl-1">: </span><span class="hl-10">Preview</span><br/><br/><span class="hl-5">on</span><span class="hl-1">:</span><br/><span class="hl-1">  </span><span class="hl-9">pull_request</span><span class="hl-1">:</span><br/><span class="hl-1">    </span><span class="hl-9">types</span><span class="hl-1">: [</span><span class="hl-10">opened</span><span class="hl-1">, </span><span class="hl-10">synchronize</span><span class="hl-1">, </span><span class="hl-10">closed</span><span class="hl-1">]</span><br/><span class="hl-1">  </span><span class="hl-9">schedule</span><span class="hl-1">:</span><br/><span class="hl-1">    - </span><span class="hl-9">cron</span><span class="hl-1">: </span><span class="hl-10">&#39;0 3 * * *&#39;</span><br/><br/><span class="hl-9">jobs</span><span class="hl-1">:</span><br/><span class="hl-1">  </span><span class="hl-9">preview</span><span class="hl-1">:</span><br/><span class="hl-1">    </span><span class="hl-9">runs-on</span><span class="hl-1">: </span><span class="hl-10">ubuntu-latest</span><br/><span class="hl-1">    </span><span class="hl-9">permissions</span><span class="hl-1">:</span><br/><span class="hl-1">      </span><span class="hl-9">contents</span><span class="hl-1">: </span><span class="hl-10">read</span><br/><span class="hl-1">      </span><span class="hl-9">pull-requests</span><span class="hl-1">: </span><span class="hl-10">write</span><br/><span class="hl-1">    </span><span class="hl-9">steps</span><span class="hl-1">:</span><br/><span class="hl-1">      - </span><span class="hl-9">uses</span><span class="hl-1">: </span><span class="hl-10">actions/checkout@v5</span><br/><span class="hl-1">      - </span><span class="hl-9">run</span><span class="hl-1">: </span><span class="hl-10">npm ci &amp;&amp; npm run build</span><br/><span class="hl-1">      - </span><span class="hl-9">uses</span><span class="hl-1">: </span><span class="hl-10">drupflare/workforce/action@v0.1.0</span><br/><span class="hl-1">        </span><span class="hl-9">with</span><span class="hl-1">:</span><br/><span class="hl-1">          </span><span class="hl-9">apiToken</span><span class="hl-1">: </span><span class="hl-10">${{ secrets.CLOUDFLARE_API_TOKEN }}</span><br/><span class="hl-1">          </span><span class="hl-9">accountId</span><span class="hl-1">: </span><span class="hl-10">${{ secrets.CLOUDFLARE_ACCOUNT_ID }}</span><br/><span class="hl-1">          </span><span class="hl-9">gitHubToken</span><span class="hl-1">: </span><span class="hl-10">${{ secrets.GITHUB_TOKEN }}</span><br/><span class="hl-1">          </span><span class="hl-9">worker</span><span class="hl-1">: </span><span class="hl-10">api</span><br/><span class="hl-1">          </span><span class="hl-9">directory</span><span class="hl-1">: </span><span class="hl-10">dist</span><br/><span class="hl-1">          </span><span class="hl-9">mode</span><span class="hl-1">: </span><span class="hl-10">${{ github.event_name == &#39;schedule&#39; &amp;&amp; &#39;sweep&#39; || github.event.action == &#39;closed&#39; &amp;&amp; &#39;destroy&#39; || &#39;deploy&#39; }}</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="routing" class="tsd-anchor-link">Routing<a href="#routing" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>A preview is named from <code>nameTemplate</code>, which defaults to <code>{worker}-pr-{pr}</code>, and is reachable on the
+account's <code>workers.dev</code> subdomain:</p>
+<pre><code><span class="hl-11">https</span><span class="hl-1">:</span><span class="hl-7">//{worker}-pr-{pr}.{account-subdomain}.workers.dev</span>
+</code><button>Copy</button></pre>
+
+<p>Worker <code>api</code> on pull request 7, under an account whose subdomain is <code>acme</code>, answers on
+<code>https://api-pr-7.acme.workers.dev</code>. The Action enables that hostname and turns per-version preview
+URLs off, so each preview has exactly one URL. Set <code>access: true</code> to put Cloudflare Access in front
+of it.</p>
+<h3 id="modes" class="tsd-anchor-link">Modes<a href="#modes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p><code>mode</code> runs when no <code>command</code> is given.</p>
+<table>
+<thead>
+<tr>
+<th>mode</th>
+<th>when</th>
+<th>what it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>deploy</code></td>
+<td><code>pull_request</code> opened or synchronized</td>
+<td>uploads the preview, writes the <code>wf:pr</code> and <code>wf:ttl</code> tags, comments the URL</td>
+</tr>
+<tr>
+<td><code>destroy</code></td>
+<td><code>pull_request</code> closed</td>
+<td>deletes the Worker and the Access application covering it</td>
+</tr>
+<tr>
+<td><code>sweep</code></td>
+<td><code>schedule</code></td>
+<td>deletes previews whose pull request is closed or untouched for longer than <code>staleAfter</code></td>
+</tr>
+</tbody>
+</table>
+<p>Inactivity is measured from the pull request's <code>updated_at</code>, which arrives for every open pull
+request in one call. <code>wf:ttl</code> is written at creation and honoured whether or not the sweep runs.</p>
+<h3 id="inputs" class="tsd-anchor-link">Inputs<a href="#inputs" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p><code>apiToken</code>, <code>accountId</code>, <code>command</code>, <code>preCommands</code>, <code>postCommands</code>, <code>workingDirectory</code>, <code>quiet</code>,
+<code>environment</code>, <code>secrets</code>, <code>vars</code>, <code>packageManager</code> and <code>gitHubToken</code> carry the same meaning as in
+<code>cloudflare/wrangler-action</code>, so a workflow converts by changing the <code>uses:</code> line. Kebab-case
+spellings are accepted too.</p>
+<table>
+<thead>
+<tr>
+<th>input</th>
+<th>default</th>
+<th>what it sets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td><code>deploy</code></td>
+<td>which preview operation to run</td>
+</tr>
+<tr>
+<td><code>worker</code></td>
+<td></td>
+<td>the Worker previews are made from</td>
+</tr>
+<tr>
+<td><code>directory</code></td>
+<td><code>dist</code></td>
+<td>the built Worker to upload</td>
+</tr>
+<tr>
+<td><code>nameTemplate</code></td>
+<td><code>{worker}-pr-{pr}</code></td>
+<td>how a preview is named</td>
+</tr>
+<tr>
+<td><code>ttl</code></td>
+<td><code>7d</code></td>
+<td>how long a preview may live regardless of the pull request</td>
+</tr>
+<tr>
+<td><code>staleAfter</code></td>
+<td><code>14d</code></td>
+<td>how long a pull request may go untouched before <code>sweep</code> removes its preview</td>
+</tr>
+<tr>
+<td><code>access</code></td>
+<td><code>false</code></td>
+<td>put the preview behind Cloudflare Access</td>
+</tr>
+<tr>
+<td><code>accessPolicyId</code></td>
+<td></td>
+<td>an existing Access policy to attach instead of creating one</td>
+</tr>
+<tr>
+<td><code>cleanup</code></td>
+<td><code>true</code></td>
+<td>delete the preview when the pull request closes</td>
+</tr>
+<tr>
+<td><code>comment</code></td>
+<td><code>true</code></td>
+<td>comment the preview URL on the pull request</td>
+</tr>
+</tbody>
+</table>
+<p>Outputs are <code>command-output</code>, <code>command-stderr</code>, <code>deployment-url</code>, <code>worker-name</code>, <code>version-id</code> and
+<code>swept</code>.</p>
+<p><code>secrets</code> and <code>vars</code> are newline-separated variable NAMES whose values come from the workflow's own
+<code>env</code>. Values are never logged.</p>
 <h2 id="🧯-error-handling" class="tsd-anchor-link">🧯 Error Handling<a href="#🧯-error-handling" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>Every refusal is a <code>WorkforceError</code> with a <code>kind</code>:</p>
 <table>
@@ -313,13 +431,19 @@ against Cloudflare and needs <code>FREE_CLOUDFLARE_ACCOUNT_ID</code> and <code>F
 <li><a href="#🧱-resources"><span>🧱 <wbr/>Resources</span></a></li>
 <li><a href="#💾-storage"><span>💾 <wbr/>Storage</span></a></li>
 <li><a href="#🔔-events"><span>🔔 <wbr/>Events</span></a></li>
+<li><a href="#🤖-github-action"><span>🤖 <wbr/>Git<wbr/>Hub <wbr/>Action</span></a></li>
+<li>
+<ul>
+<li><a href="#routing"><span>Routing</span></a></li>
+<li><a href="#modes"><span>Modes</span></a></li>
+<li><a href="#inputs"><span>Inputs</span></a></li></ul></li>
 <li><a href="#🧯-error-handling"><span>🧯 <wbr/>Error <wbr/>Handling</span></a></li>
 <li><a href="#🧗-limitations"><span>🧗 <wbr/>Limitations</span></a></li>
 <li><a href="#📚-api-reference"><span>📚 <wbr/>API <wbr/>Reference</span></a></li>
 <li><a href="#🧪-contributing"><span>🧪 <wbr/>Contributing</span></a></li>
 <li><a href="#📝-license"><span>📝 <wbr/>License</span></a></li></ul></div></details></div>
 <div class="site-menu">
-<nav class="tsd-navigation"><a href="modules.html">@drupflare/workforce - v0.1.0</a>
+<nav class="tsd-navigation"><a href="modules.html">@drupflare/workforce - v0.1.1</a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container">
 <li>Loading...</li></ul></nav></div></div></div><footer>
 <p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
