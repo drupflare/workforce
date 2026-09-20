@@ -455,7 +455,12 @@ never the check.
 - **The API allows 1,200 requests per five minutes per user**, counted across the dashboard and every
   token together. Crossing it blocks every call for five minutes.
 - **A dispatch namespace script has no versions, deployments, subdomain, schedules or tails**, and
-  allows eight tags.
+  allows eight tags. Release identity is application-level there instead: a `RevisionStore` does not
+  read the platform, so history, diff and `planRevert` work on a namespaced script exactly as they do
+  on an account-scoped one. What is genuinely unavailable is TRAFFIC SPLITTING, because with no
+  `/deployments` endpoint there is nothing to split across, so a revert is a re-upload and is atomic
+  per script rather than gradual. A staged rollout there belongs in the dispatch Worker, which
+  decides what reaches which script.
 - **`edgeport` is required only for the SSH and SFTP sources**, is imported lazily, and works only on
   the Workers runtime.
 
