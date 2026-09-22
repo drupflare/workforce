@@ -6,7 +6,7 @@
  */
 
 import { assetsApi, syncAssets, type SyncResult } from '../assets.js';
-import { NotFoundError } from '../client/errors.js';
+import { NotFoundError, UsageError } from '../client/errors.js';
 import type {
 	Plane,
 	SecretSummary,
@@ -120,7 +120,9 @@ export class WorkerHandle {
 		requireCapability(this.plane, 'versions');
 		const accountBase = (this.plane as unknown as { base?: string }).base;
 		if (accountBase === undefined) {
-			throw new Error(`the ${this.plane.kind} plane exposes no script base path`);
+			throw new UsageError(
+				`the ${this.plane.kind} plane has versions of its own rather than under a Cloudflare script path; reach them on the plane`
+			);
 		}
 		return new VersionsApi(this.plane, this.name, this.plane.http, accountBase);
 	}
@@ -144,7 +146,14 @@ export class WorkerHandle {
 		sync: (tree: ModuleSet): Promise<SyncResult> => {
 			requireCapability(this.plane, 'assets');
 			const accountId = (this.plane as unknown as { accountId?: string }).accountId ?? '';
-			const base = (this.plane as unknown as { base?: string }).base ?? '';
+			const base = (this.plane as unknown as { base?: string }).base;
+			// a plane with no script base has no upload session either, and guessing an empty
+			// prefix posts the manifest to a path that is not the asset API
+			if (base === undefined) {
+				throw new UsageError(
+					`the ${this.plane.kind} plane serves assets out of the bundle it was deployed rather than through an upload session; put them in the source you upload`
+				);
+			}
 			return syncAssets(
 				assetsApi(
 					this.plane.http,

@@ -15,7 +15,7 @@ const require = createRequire(import.meta.url);
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 
 const expected = {
-	'.': ['workforce', 'cloudflare', 'dispatch', 'fromFiles', 'fromTarball'],
+	'.': ['workforce', 'cloudflare', 'dispatch', 'workerd', 'fromFiles', 'fromTarball'],
 	'./store': ['memoryStore', 'hybridStore'],
 	'./merge': ['merge'],
 	'./node': ['fromDirectory']

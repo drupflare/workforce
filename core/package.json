@@ -1,6 +1,6 @@
 {
 	"name": "@drupflare/workforce",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Management and fleet library for Cloudflare Workers",
 	"license": "MIT",
