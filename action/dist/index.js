@@ -36887,13 +36887,13 @@ class WorkforceError extends Error {
   }
 }
 
-class AuthError extends WorkforceError {
+class chunk_4nmgzqby_AuthError extends WorkforceError {
   constructor(message, options) {
     super("auth", message, options);
   }
 }
 
-class ApiError extends WorkforceError {
+class chunk_4nmgzqby_ApiError extends WorkforceError {
   status;
   errors;
   constructor(message, status, errors = [], options) {
@@ -36914,7 +36914,7 @@ class LimitError extends WorkforceError {
   }
 }
 
-class NotFoundError extends WorkforceError {
+class chunk_4nmgzqby_NotFoundError extends WorkforceError {
   constructor(message, options) {
     super("not-found", message, options);
   }
@@ -36936,7 +36936,7 @@ class chunk_4nmgzqby_UsageError extends WorkforceError {
   }
 }
 
-class TransportError extends WorkforceError {
+class chunk_4nmgzqby_TransportError extends WorkforceError {
   constructor(message, options) {
     super("transport", message, options);
   }
@@ -37987,7 +37987,7 @@ class WorkerHandle {
   async require() {
     const summary = await this.plane.get(this.name);
     if (summary === null) {
-      throw new NotFoundError(`no Worker named ${this.name} on ${this.plane.target}`);
+      throw new chunk_4nmgzqby_NotFoundError(`no Worker named ${this.name} on ${this.plane.target}`);
     }
     return summary;
   }
@@ -38035,7 +38035,7 @@ class WorkerHandle {
     requireCapability(this.plane, "versions");
     const accountBase = this.plane.base;
     if (accountBase === undefined) {
-      throw new Error(`the ${this.plane.kind} plane exposes no script base path`);
+      throw new chunk_4nmgzqby_UsageError(`the ${this.plane.kind} plane has versions of its own rather than under a Cloudflare script path; reach them on the plane`);
     }
     return new VersionsApi(this.plane, this.name, this.plane.http, accountBase);
   }
@@ -38049,7 +38049,10 @@ class WorkerHandle {
     sync: (tree) => {
       requireCapability(this.plane, "assets");
       const accountId = this.plane.accountId ?? "";
-      const base = this.plane.base ?? "";
+      const base = this.plane.base;
+      if (base === undefined) {
+        throw new chunk_4nmgzqby_UsageError(`the ${this.plane.kind} plane serves assets out of the bundle it was deployed rather than through an upload session; put them in the source you upload`);
+      }
       return syncAssets(assetsApi(this.plane.http, accountId, `${base}/scripts/${this.name}/assets-upload-session`), tree);
     }
   };
@@ -38274,20 +38277,20 @@ async function readEnvelope(response, what) {
   try {
     body = await response.json();
   } catch (cause) {
-    throw new TransportError(`${what}: HTTP ${response.status} with a non-JSON body`, {
+    throw new chunk_4nmgzqby_TransportError(`${what}: HTTP ${response.status} with a non-JSON body`, {
       cause
     });
   }
   const details = detailsOf(body);
   const detail = details.map((d) => d.message).join("; ");
   if (response.status === 401 || response.status === 403) {
-    throw new AuthError(`${what}: HTTP ${response.status}, the credential was rejected${detail === "" ? "" : ` (${detail})`}`);
+    throw new chunk_4nmgzqby_AuthError(`${what}: HTTP ${response.status}, the credential was rejected${detail === "" ? "" : ` (${detail})`}`);
   }
   if (response.status === 404) {
-    throw new NotFoundError(`${what}: not found${detail === "" ? "" : ` (${detail})`}`);
+    throw new chunk_4nmgzqby_NotFoundError(`${what}: not found${detail === "" ? "" : ` (${detail})`}`);
   }
   if (body.success === false || body.result === undefined) {
-    throw new ApiError(`${what}: ${detail === "" ? `HTTP ${response.status}` : detail}`, response.status, details);
+    throw new chunk_4nmgzqby_ApiError(`${what}: ${detail === "" ? `HTTP ${response.status}` : detail}`, response.status, details);
   }
   return body.result;
 }
@@ -38347,7 +38350,7 @@ class HttpClient {
       } catch (cause) {
         this.budget.release();
         if (attempt >= this.retries) {
-          throw new TransportError(`${options.method ?? "GET"} ${path} never answered`, {
+          throw new chunk_4nmgzqby_TransportError(`${options.method ?? "GET"} ${path} never answered`, {
             cause
           });
         }
@@ -39356,6 +39359,270 @@ class DispatchNamespaces {
     await this.http.send(`${this.base}/${name}`, { method: "DELETE" });
   }
 }
+// src/plane/workerd.ts
+var BASTION_TOKEN_PREFIX = "bst_";
+var WORKERD_CAPABILITIES = {
+  versions: CAN,
+  deployments: CAN,
+  subdomain: cannot("a self-hosted node has no workers.dev; a site is reached at the host it is configured with"),
+  schedules: cannot("workerd exposes no way to invoke a scheduled() handler; it has no cron trigger in its schema and no http path to runScheduled"),
+  tails: CAN,
+  analytics: CAN,
+  assets: CAN,
+  access: cannot("Cloudflare Access is not reachable from a self-hosted node; bastion authorises with its own tokens and sessions"),
+  routes: CAN,
+  tags: CAN,
+  maxTags: null
+};
+function isoOf(value) {
+  if (typeof value === "number" && Number.isFinite(value))
+    return new Date(value).toISOString();
+  return typeof value === "string" && value !== "" ? value : null;
+}
+function nameOf(row) {
+  return String(row.host ?? row.name ?? "");
+}
+function summaryOf2(row) {
+  const name = nameOf(row);
+  return {
+    name,
+    id: name === "" ? null : name,
+    createdOn: isoOf(row.createdAt),
+    modifiedOn: isoOf(row.updatedAt),
+    tags: row.tags ?? []
+  };
+}
+function settingsOf2(row) {
+  return {
+    bindings: [],
+    compatibilityDate: null,
+    compatibilityFlags: [],
+    tags: row.tags ?? [],
+    logpush: null,
+    observability: null,
+    raw: row
+  };
+}
+function versionOf2(row) {
+  return {
+    id: String(row.id ?? ""),
+    site: String(row.site ?? ""),
+    bytes: row.bytes ?? 0,
+    uploadedAt: isoOf(row.uploadedAt),
+    uploadedBy: row.uploadedBy ?? null,
+    annotations: row.annotations ?? {}
+  };
+}
+function deploymentOf(row, site) {
+  const split = row.split ?? null;
+  return {
+    site: String(row.site ?? site),
+    current: String(row.current ?? ""),
+    split: split === null ? null : { version: String(split.version ?? ""), percent: split.percent ?? 0 },
+    at: isoOf(row.at),
+    by: row.by ?? null
+  };
+}
+function logOf(row) {
+  const { at, level, message, site, ...fields } = row;
+  return {
+    at: isoOf(at),
+    level: typeof level === "string" ? level : "info",
+    message: typeof message === "string" ? message : "",
+    site: typeof site === "string" ? site : null,
+    fields
+  };
+}
+function assertSiteName(name) {
+  const label = "[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
+  if (name.length > 253 || !new RegExp(`^${label}(?:\\.${label})*$`).test(name)) {
+    throw new UsageError(`${name} is not a usable bastion site: a site is addressed by the host it serves, such as www.example.edu`);
+  }
+}
+function noSecrets(name) {
+  return new UsageError(`bastion secrets are host-level and reachable only from an interactive session, so ${name} has none to read through an API token; set them on the node with \`bastion secrets set\``);
+}
+async function readBastion(response, what) {
+  let body;
+  try {
+    body = await response.json();
+  } catch (cause) {
+    throw new TransportError(`${what}: HTTP ${response.status} with a non-JSON body`, {
+      cause
+    });
+  }
+  const detail = body.error?.message ?? "";
+  const suffix = detail === "" ? "" : ` (${detail})`;
+  if (response.status === 401 || response.status === 403) {
+    throw new AuthError(`${what}: HTTP ${response.status}, the node rejected the token${suffix}`);
+  }
+  if (response.status === 404) {
+    throw new NotFoundError(`${what}: not found${suffix}`);
+  }
+  if (body.ok !== true) {
+    const code = body.error?.code;
+    throw new ApiError(`${what}: ${detail === "" ? `HTTP ${response.status}` : detail}`, response.status, body.error === undefined ? [] : [{ code: null, message: code === undefined ? detail : `${code}: ${detail}` }]);
+  }
+  return body;
+}
+
+class WorkerdPlane {
+  kind = "workerd";
+  capabilities = WORKERD_CAPABILITIES;
+  http;
+  endpoint;
+  credentialKey;
+  constructor(options) {
+    if (options.endpoint === "")
+      throw new UsageError("no bastion endpoint");
+    if (options.token === "")
+      throw new UsageError("no bastion API token");
+    if (!options.token.startsWith(BASTION_TOKEN_PREFIX)) {
+      throw new UsageError(`a bastion API token starts with ${BASTION_TOKEN_PREFIX} and this one does not; a session cookie is not one`);
+    }
+    this.endpoint = options.endpoint.replace(/\/+$/, "");
+    this.credentialKey = options.budgetKey ?? options.token;
+    this.http = new HttpClient(() => ({ authorization: `Bearer ${options.token}` }), {
+      ...options,
+      baseUrl: this.endpoint,
+      budget: options.budget ?? new Budget
+    });
+  }
+  get target() {
+    return `node ${this.endpoint}`;
+  }
+  async call(path, options = {}) {
+    const response = await this.http.send(path, options);
+    return readBastion(response, `${options.method ?? "GET"} ${path}`);
+  }
+  json(path, method, payload) {
+    return this.call(path, {
+      method,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  }
+  async list(options = {}) {
+    const body = await this.call("/api/sites");
+    const rows = (body.sites ?? []).map(summaryOf2).filter((row) => row.name !== "").sort((a, b) => a.name.localeCompare(b.name));
+    return options.limit === undefined ? rows : rows.slice(0, options.limit);
+  }
+  async get(name) {
+    assertSiteName(name);
+    const rows = await this.list();
+    return rows.find((row) => row.name === name) ?? null;
+  }
+  async exists(name) {
+    return await this.get(name) !== null;
+  }
+  async status() {
+    return this.call("/api/status");
+  }
+  async create(site) {
+    assertSiteName(site.host);
+    const body = await this.json("/api/sites", "POST", site);
+    return summaryOf2(body.site ?? { host: site.host });
+  }
+  async upload(name, upload) {
+    assertSiteName(name);
+    const body = await this.call(`/api/sites/${name}/deploy`, {
+      method: "POST",
+      body: upload.body
+    });
+    const id = body.version?.id ?? null;
+    return { name, versionId: id, etag: id, metadata: upload.metadata };
+  }
+  async delete(name) {
+    assertSiteName(name);
+    await this.call(`/api/sites/${name}`, { method: "DELETE" });
+  }
+  async settings(name) {
+    return settingsOf2(await this.row(name));
+  }
+  async patchSettings(name, settings) {
+    if (settings.bindings !== undefined) {
+      throw new UsageError(`bastion binds a name to a target string rather than to a typed Cloudflare binding, so ${name} cannot take a binding list; write \`bindings\` on the site record instead`);
+    }
+    const current = await this.row(name);
+    const payload = { ...current, host: name };
+    if (settings.tags !== undefined)
+      payload.tags = settings.tags;
+    const body = await this.json("/api/sites", "POST", payload);
+    return settingsOf2(body.site ?? payload);
+  }
+  async content(name) {
+    assertSiteName(name);
+    throw new UsageError(`a bastion node does not serve a deployed bundle back, so ${name} has no content to read; keep what you deployed, or address the version by its content id`);
+  }
+  async listSecrets(name) {
+    assertSiteName(name);
+    throw noSecrets(name);
+  }
+  async putSecret(name, _secret) {
+    assertSiteName(name);
+    throw noSecrets(name);
+  }
+  async deleteSecret(name, _secretName) {
+    assertSiteName(name);
+    throw noSecrets(name);
+  }
+  async setTags(name, tags) {
+    return (await this.patchSettings(name, { tags })).tags;
+  }
+  async versions(name) {
+    assertSiteName(name);
+    const body = await this.call("/api/versions");
+    return (body.versions ?? []).map(versionOf2).filter((version) => version.site === name).sort((a, b) => (b.uploadedAt ?? "").localeCompare(a.uploadedAt ?? ""));
+  }
+  async deployVersion(name, version) {
+    assertSiteName(name);
+    const body = await this.json(`/api/sites/${name}/deploy`, "POST", { version });
+    return deploymentOf(body.deployment ?? {}, name);
+  }
+  async rollout(name, version, percent) {
+    assertSiteName(name);
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+      throw new UsageError(`${percent} is not a share of a rollout; pass 0 to 100`);
+    }
+    const body = await this.json(`/api/sites/${name}/rollout`, "POST", {
+      version,
+      percent
+    });
+    return deploymentOf(body.deployment ?? {}, name);
+  }
+  async rollback(name, version) {
+    assertSiteName(name);
+    const body = await this.json(`/api/sites/${name}/rollback`, "POST", version === undefined ? {} : { version });
+    return deploymentOf(body.deployment ?? {}, name);
+  }
+  async logs(options = {}) {
+    const body = await this.call("/api/logs", {
+      query: { site: options.site, level: options.level, limit: options.limit }
+    });
+    return (body.lines ?? []).map(logOf);
+  }
+  async metrics() {
+    const response = await this.http.send("/api/metrics", {
+      headers: { accept: "text/plain" }
+    });
+    if (response.status >= 400) {
+      throw new ApiError(`GET /api/metrics: HTTP ${response.status}`, response.status);
+    }
+    return response.text();
+  }
+  async row(name) {
+    assertSiteName(name);
+    const body = await this.call("/api/sites");
+    const row = (body.sites ?? []).find((entry) => nameOf(entry) === name);
+    if (row === undefined) {
+      throw new NotFoundError(`no site named ${name} on ${this.target}`);
+    }
+    return row;
+  }
+}
+function workerd(options) {
+  return new WorkerdPlane(options);
+}
 // src/resources.ts
 var D1_LIMITS = {
   databasesFree: 10,
@@ -39884,7 +40151,7 @@ function workforce(options) {
 }
 
 
-//# debugId=70936B282ABB9E1064756E2164756E21
+//# debugId=F87A380F6B2C809564756E2164756E21
 //# sourceMappingURL=index.js.map
 
 ;// CONCATENATED MODULE: external "node:fs/promises"
