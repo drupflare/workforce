@@ -30,6 +30,7 @@ export * from './observability.js';
 export * from './plane/cloudflare.js';
 export * from './plane/dispatch.js';
 export * from './plane/plane.js';
+export * from './plane/workerd.js';
 export * from './resources.js';
 export * from './revisions/codec.js';
 export * from './revisions/compact.js';
