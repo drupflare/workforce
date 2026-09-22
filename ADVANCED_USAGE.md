@@ -13,6 +13,7 @@ starts, then gives the whole thing rather than a fragment.
 - [Keeping Version History](#keeping-version-history)
 - [Reading a Fleet-Wide Meter](#reading-a-fleet-wide-meter)
 - [Converting a Host Over SFTP](#converting-a-host-over-sftp)
+- [A Canary on a Self-Hosted Node](#a-canary-on-a-self-hosted-node)
 
 ## A Worker That Provisions Another Worker
 
@@ -288,3 +289,49 @@ console.log(`read ${modules.size} files; host key ${hostKey?.fingerprint}`);
 On a first connection leave `expectFingerprint` unset and record what comes back; on every connection
 after, pass it. A changed key is then refused rather than accepted quietly, which is the difference
 between pinning and pretending to.
+
+## A Canary on a Self-Hosted Node
+
+### Prerequisites
+
+A bastion node reachable over HTTPS and a `bst_` API token. The tenant a token may reach rides on the
+token itself, so nothing below names one.
+
+The node runs workerd and owns its router, its scheduler and its version store, so the canary here is
+the same shape as the Cloudflare one above without an account behind it. A site is addressed by the
+host it serves, and it needs a bundle path and a probe that an upload cannot supply, so it is
+registered before anything is deployed to it.
+
+```ts
+import { buildUpload, fromFiles, workerd } from '@drupflare/workforce';
+
+const node = workerd({ endpoint: 'https://node.example.edu', token: env.BASTION_TOKEN });
+const site = 'www.example.edu';
+
+await node.create({ host: site, bundle: '/srv/bundles/example.tar', probe: '/health' });
+
+await node.upload(
+  site,
+  buildUpload({
+    source: fromFiles({ 'index.js': code }),
+    metadata: { compatibility_date: '2026-08-01' }
+  })
+);
+
+const [next, current] = await node.versions(site);
+await node.rollout(site, next!.id, 10);
+
+const failures = (await node.logs({ site, level: 'error', limit: 100 })).length;
+if (failures > 0) await node.rollback(site, current!.id);
+```
+
+A version id is the content address of the bundle, so uploading the same bytes twice gives one
+version rather than two, and a rollback is a pointer move instead of a re-upload. The split is real:
+the node picks a version per visitor at its own front door, so a session stays on one side of the
+rollout for as long as it lasts.
+
+Two capabilities report `cannot` here and say why. There is no `workers.dev` on a self-hosted box, so
+`subdomain` is unavailable, and Cloudflare Access is not reachable from one, so `access` is too.
+Analytics reads the node's own log and its Prometheus endpoint through `logs()` and `metrics()` rather
+than Cloudflare's query API. Secrets are host-level on a node and reachable only from an interactive
+session, and a node does not serve a deployed bundle back, so keep the source you upload.

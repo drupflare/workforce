@@ -92,13 +92,15 @@ A plane is the executor. The operations are the same on each; what differs is de
 discovered.
 
 ```ts
-import { cloudflare, dispatch, workforce } from '@drupflare/workforce';
+import { cloudflare, dispatch, workerd, workforce } from '@drupflare/workforce';
 
 const account = workforce({ plane: cloudflare({ accountId, token }) });
 const tenants = workforce({ plane: dispatch({ accountId, token, namespace: 'tenants' }) });
+const node = workforce({ plane: workerd({ endpoint: 'https://node.example.edu', token: bst }) });
 
 await account.worker('api').upload({ source });
 await tenants.worker('acme').upload({ source });
+await node.plane.upload('www.example.edu', built);
 
 tenants.capabilities.versions.supported; // false
 tenants.capabilities.versions.reason; // why, and what to use instead
@@ -106,12 +108,15 @@ tenants.capabilities.versions.reason; // why, and what to use instead
 
 Reaching for an unsupported operation throws a `CapabilityError` before any request is made.
 
-|                                 | `cloudflare` | `dispatch` |
-| ------------------------------- | ------------ | ---------- |
-| versions, deployments, rollback | yes          | no         |
-| subdomain, schedules, tails     | yes          | no         |
-| assets, tags, analytics, Access | yes          | yes        |
-| tags per script                 | unlimited    | 8          |
+|                                 | `cloudflare` | `dispatch` | `workerd` |
+| ------------------------------- | ------------ | ---------- | --------- |
+| versions, deployments, rollback | yes          | no         | yes       |
+| tails                           | yes          | no         | yes       |
+| schedules                       | yes          | no         | no        |
+| subdomain                       | yes          | no         | no        |
+| assets, tags, analytics         | yes          | yes        | yes       |
+| Access                          | yes          | yes        | no        |
+| tags per script                 | unlimited    | 8          | unlimited |
 
 ## 📦 Sources
 
@@ -461,6 +466,11 @@ never the check.
   `/deployments` endpoint there is nothing to split across, so a revert is a re-upload and is atomic
   per script rather than gradual. A staged rollout there belongs in the dispatch Worker, which
   decides what reaches which script.
+- **A bastion node has no `workers.dev`, no Access and no cron triggers**, and its secrets are
+  host-level rather than per-site. Versions, deployments, tails, routes and assets are real there
+  because the node owns its router and its store; a version id is the content address of the bundle, so
+  the same bytes uploaded twice are one version. Logs and metrics come from the node's own endpoints
+  instead of Cloudflare's query API, and the node does not serve a deployed bundle back.
 - **`edgeport` is required only for the SSH and SFTP sources**, is imported lazily, and works only on
   the Workers runtime.
 
