@@ -14,7 +14,7 @@
 		"prettier:check": "prettier --check ."
 	},
 	"dependencies": {
-		"@actions/core": "^2.0.0",
+		"@actions/core": "^3.0.0",
 		"@actions/github": "^9.0.0",
 		"@drupflare/workforce": "workspace:*"
 	},
