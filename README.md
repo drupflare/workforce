@@ -272,8 +272,15 @@ const report = await applyPlan(plan, async (action) => {
 });
 ```
 
-A fleet operation finishes and reports rather than stopping at the first failure, and `applyPlan`
-hands back a cursor when its action budget runs out.
+A fleet operation finishes and reports rather than stopping at the first failure. `planFleet` keys a
+worker on plane, scope and name, and throws on a duplicate key in either list.
+
+`applyPlan` keeps one state per action (`pending`, `running`, `succeeded` or `failed`) in a cursor of
+the form `{ digest, states }`. The digest is a SHA-256 over the plan's actions, so a cursor from a
+different plan throws a `UsageError`. A failed action stays resumable, and `done` is true only when
+every action has succeeded. `onTransition` is called on each state change so a caller can persist the
+cursor, and a throw from it stops the apply. A runner can be re-run after a crash between its side
+effect and the `succeeded` write, so runners must be idempotent.
 
 ## 🌱 Environments
 

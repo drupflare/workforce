@@ -24,6 +24,8 @@ export const MAX_TAGS = 8;
 export interface InventoryRecord {
 	worker: string;
 	plane: string;
+	/** the account or node the plane answers for; part of a worker's identity when set */
+	scope?: string;
 	env: string | null;
 	owner: string | null;
 	/** milliseconds since the epoch, after which a sweep may remove this worker */
@@ -108,6 +110,7 @@ export function planeInventory(plane: Plane): InventoryStore {
 	const recordOf = (summary: WorkerSummary): InventoryRecord => ({
 		worker: summary.name,
 		plane: plane.kind,
+		scope: plane.target,
 		env: null,
 		owner: null,
 		ttlAtMs: null,

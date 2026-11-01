@@ -6,6 +6,7 @@
  * decorative.
  */
 
+import { UsageError } from '../client/errors.js';
 import type { InventoryRecord } from './inventory.js';
 
 export type ActionKind = 'create' | 'update' | 'delete' | 'unchanged';
@@ -40,6 +41,25 @@ function differences(desired: InventoryRecord, actual: InventoryRecord): string[
 	return changes;
 }
 
+/** a worker is its plane, its account and its name; the same name elsewhere is another worker */
+function identityOf(record: InventoryRecord): string {
+	return JSON.stringify([record.plane, record.scope ?? null, record.worker]);
+}
+
+function indexed(records: readonly InventoryRecord[], side: string): Map<string, InventoryRecord> {
+	const index = new Map<string, InventoryRecord>();
+	for (const record of records) {
+		const key = identityOf(record);
+		if (index.has(key)) {
+			const where =
+				record.scope === undefined ? record.plane : `${record.plane} ${record.scope}`;
+			throw new UsageError(`${side} lists ${record.worker} on ${where} twice`);
+		}
+		index.set(key, record);
+	}
+	return index;
+}
+
 export interface PlanOptions {
 	/**
 	 * Remove workers that are present but not desired.
@@ -55,11 +75,12 @@ export function planFleet(
 	actual: readonly InventoryRecord[],
 	options: PlanOptions = {}
 ): FleetPlan {
-	const byName = new Map(actual.map((r) => [r.worker, r]));
+	const wanted = indexed(desired, 'desired');
+	const present = indexed(actual, 'actual');
 	const actions: PlannedAction[] = [];
 
-	for (const want of desired) {
-		const have = byName.get(want.worker);
+	for (const [key, want] of wanted) {
+		const have = present.get(key);
 		if (have === undefined) {
 			actions.push({
 				kind: 'create',
@@ -69,7 +90,7 @@ export function planFleet(
 			});
 			continue;
 		}
-		byName.delete(want.worker);
+		present.delete(key);
 		const changes = differences(want, have);
 		actions.push({
 			kind: changes.length === 0 ? 'unchanged' : 'update',
@@ -81,7 +102,7 @@ export function planFleet(
 	}
 
 	if (options.prune === true) {
-		for (const leftover of byName.values()) {
+		for (const leftover of present.values()) {
 			actions.push({
 				kind: 'delete',
 				worker: leftover.worker,

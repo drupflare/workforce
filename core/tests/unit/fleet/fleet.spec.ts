@@ -1,18 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { UsageError } from '../../../src/client/errors.js';
-import { applyPlan } from '../../../src/fleet/apply.js';
+import { applyPlan, type ApplyCursor } from '../../../src/fleet/apply.js';
 import {
 	decodeTags,
 	encodeTags,
 	expired,
 	matches,
 	MAX_TAGS,
+	planeInventory,
 	storeInventory,
 	TAG_KEYS,
 	type InventoryRecord
 } from '../../../src/fleet/inventory.js';
 import { mapFleet } from '../../../src/fleet/map.js';
-import { planFleet } from '../../../src/fleet/plan.js';
+import { planFleet, type PlannedAction } from '../../../src/fleet/plan.js';
 import { memoryStore } from '../../../src/store/index.js';
 
 const record = (over: Partial<InventoryRecord> = {}): InventoryRecord => ({
@@ -182,6 +183,33 @@ describe('planFleet', () => {
 		const same = [record({ worker: 'a', env: 'dev' })];
 		expect(planFleet(same, same).empty).toBe(true);
 	});
+
+	it('reads a worker with the same name on another plane as a different worker', () => {
+		const plan = planFleet(
+			[record({ worker: 'api', plane: 'cloudflare', scope: 'account a' })],
+			[record({ worker: 'api', plane: 'workerd', scope: 'node https://n.example' })]
+		);
+		expect(plan.unchanged).toEqual([]);
+		expect(plan.create.map((a) => a.worker)).toEqual(['api']);
+	});
+
+	it('reads the same name in another account as a different worker', () => {
+		const plan = planFleet(
+			[record({ worker: 'api', scope: 'account a' })],
+			[record({ worker: 'api', scope: 'account b' })]
+		);
+		expect(plan.unchanged).toEqual([]);
+		expect(plan.create.map((a) => a.worker)).toEqual(['api']);
+	});
+
+	it('rejects a duplicate identity in either list', () => {
+		expect(() => planFleet([record({ worker: 'a' }), record({ worker: 'a' })], [])).toThrow(
+			UsageError
+		);
+		expect(() => planFleet([], [record({ worker: 'a' }), record({ worker: 'a' })])).toThrow(
+			UsageError
+		);
+	});
 });
 
 describe('applyPlan', () => {
@@ -203,7 +231,7 @@ describe('applyPlan', () => {
 	it('hands back a cursor when its action budget runs out', async () => {
 		const first = await applyPlan(plan, async () => {}, { budgetActions: 1 });
 		expect(first.done).toBe(false);
-		expect(first.cursor).toEqual({ index: 1 });
+		expect(first.cursor?.states).toEqual(['succeeded', 'pending']);
 
 		const second = await applyPlan(plan, async () => {}, {
 			budgetActions: 1,
@@ -229,6 +257,120 @@ describe('applyPlan', () => {
 		expect(report.failed.map((f) => f.worker)).toEqual(['a']);
 		expect(report.applied).toEqual(['b']);
 	});
+
+	it('does not report done after failFast stops on a failure', async () => {
+		const three = planFleet(
+			[
+				record({ worker: 'a', env: 'dev' }),
+				record({ worker: 'b', env: 'dev' }),
+				record({ worker: 'c', env: 'dev' })
+			],
+			[]
+		);
+		const report = await applyPlan(
+			three,
+			async (action) => {
+				if (action.worker === 'a') throw new Error('refused');
+			},
+			{ concurrency: 1, failFast: true }
+		);
+		expect(report.done).toBe(false);
+		expect(report.cursor?.states).toEqual(['failed', 'pending', 'pending']);
+	});
+
+	it('retries a failed action on resume instead of skipping it', async () => {
+		let attempts = 0;
+		const runner = async (action: PlannedAction) => {
+			if (action.worker === 'a' && attempts++ === 0) throw new Error('refused');
+		};
+		const first = await applyPlan(plan, runner, { budgetActions: 1 });
+		expect(first.failed.map((f) => f.worker)).toEqual(['a']);
+
+		const second = await applyPlan(plan, runner, { budgetActions: 1, cursor: first.cursor });
+		expect(second.applied).toEqual(['a']);
+
+		const third = await applyPlan(plan, runner, { budgetActions: 1, cursor: second.cursor });
+		expect(third.applied).toEqual(['b']);
+		expect(third.done).toBe(true);
+	});
+
+	it('refuses a cursor made from a different plan', async () => {
+		const first = await applyPlan(plan, async () => {}, { budgetActions: 1 });
+		const other = planFleet(
+			[record({ worker: 'a', env: 'prod' }), record({ worker: 'b', env: 'dev' })],
+			[]
+		);
+		await expect(
+			applyPlan(other, async () => {}, { cursor: first.cursor })
+		).rejects.toBeInstanceOf(UsageError);
+	});
+});
+
+describe('applyPlan crash recovery', () => {
+	const three = planFleet(
+		[
+			record({ worker: 'a', env: 'dev' }),
+			record({ worker: 'b', env: 'dev' }),
+			record({ worker: 'c', env: 'dev' })
+		],
+		[]
+	);
+
+	/** b fails once; killAt stops the executor right after that transition is persisted */
+	async function drive(killAt?: number) {
+		const ledger: string[] = [];
+		const attempts = new Map<string, number>();
+		const runner = async (action: PlannedAction) => {
+			const attempt = (attempts.get(action.worker) ?? 0) + 1;
+			attempts.set(action.worker, attempt);
+			if (action.worker === 'b' && attempt === 1) throw new Error('refused');
+			ledger.push(action.worker);
+		};
+
+		let transitions = 0;
+		let killed = false;
+		let persisted: ApplyCursor | undefined;
+		const onTransition = (cursor: ApplyCursor) => {
+			transitions += 1;
+			persisted = cursor;
+			if (transitions === killAt) {
+				killed = true;
+				throw new Error('executor killed');
+			}
+		};
+
+		let done = false;
+		let cursor: ApplyCursor | undefined;
+		for (let round = 0; !done && round < 10; round++) {
+			try {
+				const report = await applyPlan(three, runner, {
+					concurrency: 1,
+					cursor,
+					onTransition
+				});
+				done = report.done;
+				cursor = report.cursor;
+			} catch (error) {
+				if (!killed) throw error;
+				// a fresh executor resumes from the last state that was persisted
+				cursor = persisted;
+			}
+		}
+		return { done, ledger, transitions, killed };
+	}
+
+	it('loses and repeats no action when the executor dies after any transition', async () => {
+		const uninterrupted = await drive();
+		expect(uninterrupted.done).toBe(true);
+		expect(uninterrupted.transitions).toBe(8);
+
+		for (let kill = 1; kill <= uninterrupted.transitions; kill++) {
+			const run = await drive(kill);
+			expect(run.killed, `kill at ${kill}`).toBe(true);
+			expect(run.done, `kill at ${kill}`).toBe(true);
+			expect([...run.ledger].sort(), `kill at ${kill}`).toEqual(['a', 'b', 'c']);
+		}
+	});
 });
 
 describe('planeInventory delete', () => {
@@ -241,5 +383,17 @@ describe('planeInventory delete', () => {
 			setTags: async (_n: string, t: string[]) => t
 		} as never);
 		await expect(inventory.delete('api')).rejects.toBeInstanceOf(UsageError);
+	});
+
+	it('takes the plane kind and account scope from the plane it reads', async () => {
+		const inventory = planeInventory({
+			kind: 'cloudflare',
+			target: 'account a',
+			list: async () => [{ name: 'api', tags: [] }],
+			get: async () => null
+		} as never);
+		const [only] = await inventory.list();
+		expect(only?.plane).toBe('cloudflare');
+		expect(only?.scope).toBe('account a');
 	});
 });
