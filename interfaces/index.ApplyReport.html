@@ -13,7 +13,7 @@
 <h1>Interface ApplyReport</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">ApplyReport</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#applied">applied</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#cursor">cursor</a><span class="tsd-signature-symbol">?:</span> <a href="index.ApplyCursor.html" class="tsd-signature-type tsd-kind-interface">ApplyCursor</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#done">done</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#failed">failed</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">error</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">worker</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#skipped">skipped</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/bae53af0ccb0a35782b198614f76f0faeb7cdeb2/core/src/fleet/apply.ts#L37">core/src/fleet/apply.ts:37</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/da1f0b56a08fd06e92d2f8df689080c6a5a803aa/core/src/fleet/apply.ts#L37">core/src/fleet/apply.ts:37</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -36,33 +36,33 @@
 <div class="tsd-comment tsd-typography"><p>workers that succeeded in this call</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/bae53af0ccb0a35782b198614f76f0faeb7cdeb2/core/src/fleet/apply.ts#L39">core/src/fleet/apply.ts:39</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/da1f0b56a08fd06e92d2f8df689080c6a5a803aa/core/src/fleet/apply.ts#L39">core/src/fleet/apply.ts:39</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="cursor"><code class="tsd-tag">Optional</code><span>cursor</span><a href="#cursor" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">cursor</span><span class="tsd-signature-symbol">?:</span> <a href="index.ApplyCursor.html" class="tsd-signature-type tsd-kind-interface">ApplyCursor</a></div>
 <div class="tsd-comment tsd-typography"><p>absent when done, so a finished apply cannot be resumed by accident</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/bae53af0ccb0a35782b198614f76f0faeb7cdeb2/core/src/fleet/apply.ts#L46">core/src/fleet/apply.ts:46</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/da1f0b56a08fd06e92d2f8df689080c6a5a803aa/core/src/fleet/apply.ts#L46">core/src/fleet/apply.ts:46</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="done"><span>done</span><a href="#done" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">done</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>every action has succeeded; a failure or an unreached action leaves this false</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/bae53af0ccb0a35782b198614f76f0faeb7cdeb2/core/src/fleet/apply.ts#L44">core/src/fleet/apply.ts:44</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/da1f0b56a08fd06e92d2f8df689080c6a5a803aa/core/src/fleet/apply.ts#L44">core/src/fleet/apply.ts:44</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="failed"><span>failed</span><a href="#failed" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">failed</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">error</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">worker</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>workers that failed in this call; a resumed apply tries them again</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/bae53af0ccb0a35782b198614f76f0faeb7cdeb2/core/src/fleet/apply.ts#L41">core/src/fleet/apply.ts:41</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/da1f0b56a08fd06e92d2f8df689080c6a5a803aa/core/src/fleet/apply.ts#L41">core/src/fleet/apply.ts:41</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="skipped"><span>skipped</span><a href="#skipped" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">skipped</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/drupflare/workforce/blob/bae53af0ccb0a35782b198614f76f0faeb7cdeb2/core/src/fleet/apply.ts#L42">core/src/fleet/apply.ts:42</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/drupflare/workforce/blob/da1f0b56a08fd06e92d2f8df689080c6a5a803aa/core/src/fleet/apply.ts#L42">core/src/fleet/apply.ts:42</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
