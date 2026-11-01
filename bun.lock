@@ -16,7 +16,7 @@
     },
     "action": {
       "name": "@drupflare/workforce-action",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@actions/core": "^2.0.0",
         "@actions/github": "^9.0.0",
@@ -31,7 +31,7 @@
     },
     "core": {
       "name": "@drupflare/workforce",
-      "version": "0.1.0",
+      "version": "0.3.0",
       "dependencies": {
         "node-diff3": "^3.2.1",
       },
