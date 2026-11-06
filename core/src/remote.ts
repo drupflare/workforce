@@ -45,26 +45,43 @@ export interface RemoteSession {
 	hostKey: HostKey | null;
 }
 
+interface SshOptions {
+	hostname: string;
+	port: number;
+	username: string;
+	password?: string;
+	privateKey?: { pem: string; passphrase?: string };
+	hostKey: { verify(type: string, key: Uint8Array): Promise<boolean> };
+}
+
 /** the edgeport surface this file uses, named so the lazy import has a type */
 interface EdgePort {
 	ssh: {
-		connect(options: Record<string, unknown>): Promise<SshSession>;
+		connect(options: SshOptions): Promise<SshSession>;
 	};
 	sftp: {
-		connect(options: Record<string, unknown>): Promise<SftpSession>;
+		connect(options: { session: SshSession }): Promise<SftpSession>;
 	};
 }
 
 interface SshSession {
-	exec(command: string): Promise<{ stdout: string; stderr: string; code: number }>;
+	exec(command: string): Promise<{ stdoutText: string; stderrText: string; code: number }>;
 	close(): Promise<void>;
 }
 
 interface SftpSession {
 	readFile(path: string): Promise<Uint8Array>;
-	readdir(path: string): Promise<{ filename: string }[]>;
+	list(path: string): Promise<{ filename: string }[]>;
 	close?(): Promise<void>;
 }
+
+/** @internal the surface above under public names, so a spec can check it against edgeport's own types */
+export type {
+	EdgePort,
+	SftpSession as EdgeSftpSession,
+	SshOptions as EdgeSshOptions,
+	SshSession as EdgeSshSession
+};
 
 /** overridable so the unit lane drives this without a socket */
 let loader: () => Promise<EdgePort> = async () => {
@@ -134,7 +151,7 @@ export async function connect(creds: RemoteCredentials): Promise<RemoteSession> 
 			username: creds.username,
 			password: creds.password,
 			privateKey: creds.privateKey,
-			hostKeys: {
+			hostKey: {
 				async verify(type: string, key: Uint8Array): Promise<boolean> {
 					const fingerprint = await fingerprintOf(key);
 					captured.value = { type, fingerprint };
@@ -155,7 +172,8 @@ export async function connect(creds: RemoteCredentials): Promise<RemoteSession> 
 		hostKey: captured.value,
 		async exec(command) {
 			try {
-				return await ssh.exec(command);
+				const result = await ssh.exec(command);
+				return { stdout: result.stdoutText, stderr: result.stderrText, code: result.code };
 			} catch (error) {
 				throw diagnose(error, creds.hostname);
 			}
@@ -169,7 +187,7 @@ export async function connect(creds: RemoteCredentials): Promise<RemoteSession> 
 		},
 		async readDir(path) {
 			try {
-				return (await sftp.readdir(path)).map((e) => e.filename);
+				return (await sftp.list(path)).map((e) => e.filename);
 			} catch (error) {
 				throw diagnose(error, creds.hostname);
 			}

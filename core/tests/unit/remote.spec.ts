@@ -1,3 +1,5 @@
+import type { SftpSession } from 'edgeport/sftp';
+import type { SshConnectOptions, SshSession } from 'edgeport/ssh';
 import { afterEach, describe, expect, it } from 'vitest';
 import { AuthError, TransportError, UsageError } from '../../src/client/errors.js';
 import {
@@ -6,9 +8,19 @@ import {
 	diagnose,
 	fromRemote,
 	readRemoteTree,
+	type EdgeSftpSession,
+	type EdgeSshOptions,
+	type EdgeSshSession,
 	type RemoteSession
 } from '../../src/remote.js';
 import { toUtf8 } from '../../src/source.js';
+
+// compile-time: what remote.ts passes and calls must exist on edgeport's own types
+export const conforms = {
+	options: (options: EdgeSshOptions): SshConnectOptions => options,
+	ssh: (session: SshSession): EdgeSshSession => session,
+	sftp: (session: SftpSession): EdgeSftpSession => session
+};
 
 const encoder = new TextEncoder();
 
@@ -33,17 +45,14 @@ function fakeEdgePort(tree: FakeTree, hostKey = new Uint8Array([1, 2, 3])) {
 
 	const loader = async () => ({
 		ssh: {
-			async connect(options: Record<string, unknown>) {
+			async connect(options: EdgeSshOptions) {
 				sshConnects += 1;
-				opened.push(options);
-				const keys = options.hostKeys as {
-					verify(type: string, key: Uint8Array): Promise<boolean>;
-				};
-				const accepted = await keys.verify('ssh-ed25519', hostKey);
+				opened.push(options as unknown as Record<string, unknown>);
+				const accepted = await options.hostKey.verify('ssh-ed25519', hostKey);
 				if (!accepted) throw new Error('host key verification failed');
 				return {
 					async exec(command: string) {
-						return { stdout: `ran ${command}`, stderr: '', code: 0 };
+						return { stdoutText: `ran ${command}`, stderrText: '', code: 0 };
 					},
 					async close() {}
 				};
@@ -57,7 +66,7 @@ function fakeEdgePort(tree: FakeTree, hostKey = new Uint8Array([1, 2, 3])) {
 						if (typeof node !== 'string') throw new Error(`${path} is not a file`);
 						return encoder.encode(node);
 					},
-					async readdir(path: string) {
+					async list(path: string) {
 						const node = at(path);
 						if (typeof node !== 'object' || node === undefined) {
 							throw new Error(`${path} is not a directory`);
@@ -132,6 +141,29 @@ describe('connect', () => {
 		await expect(
 			connect({ ...creds, expectFingerprint: 'SHA256:somethingelse' })
 		).rejects.toBeInstanceOf(AuthError);
+	});
+
+	it('passes the pin under hostKey, the only name edgeport reads', async () => {
+		const fake = fakeEdgePort({ etc: {} });
+		_setEdgePortLoader(fake.loader);
+		const session = await connect({ ...creds, expectFingerprint: 'SHA256:anything' }).catch(
+			(error: unknown) => error
+		);
+		expect(session).toBeInstanceOf(AuthError);
+		expect(Object.keys(fake.opened[0] ?? {})).toContain('hostKey');
+		expect(fake.opened[0]).not.toHaveProperty('hostKeys');
+	});
+
+	it('returns command output as text, not as the bytes edgeport carries', async () => {
+		const { loader } = fakeEdgePort({ etc: {} });
+		_setEdgePortLoader(loader);
+		const session = await connect(creds);
+		expect(await session.exec('uname -a')).toEqual({
+			stdout: 'ran uname -a',
+			stderr: '',
+			code: 0
+		});
+		await session.close();
 	});
 
 	it('opens one ssh connection for the session rather than one per operation', async () => {
