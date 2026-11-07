@@ -116,8 +116,8 @@ function versionOf(version: StoredVersion): unknown {
 
 /** whether this upload metadata changes a Durable Object's lifecycle */
 function lifecycleChange(metadata: Record<string, unknown>): boolean {
-	const migrations = metadata.migrations as unknown[] | undefined;
-	if (Array.isArray(migrations) && migrations.length > 0) return true;
+	const migrations = metadata.migrations as { steps?: unknown[] } | undefined;
+	if ((migrations?.steps?.length ?? 0) > 0) return true;
 	const exports = metadata.exports as Record<string, { state?: string }> | undefined;
 	return Object.values(exports ?? {}).some((e) => e.state !== undefined && e.state !== 'created');
 }
@@ -217,6 +217,14 @@ export async function startLocalPlane(options: PlaneOptions = {}): Promise<Local
 			const main = String(metadata.main_module ?? '');
 			if (main === '' || !files.has(main)) {
 				return no(400, 10021, `the entry point ${main} is not in the upload`);
+			}
+			// the real API takes one stepped object and refuses the list a wrangler config holds
+			if (Array.isArray(metadata.migrations)) {
+				return no(
+					400,
+					10021,
+					'json: cannot unmarshal array into Go struct field Metadata.migrations of type reader.ActorMigrations'
+				);
 			}
 
 			const joined = Buffer.concat([...files.values()].map((f) => Buffer.from(f)));

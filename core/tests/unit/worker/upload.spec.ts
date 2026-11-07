@@ -7,6 +7,7 @@ import {
 	carriesLifecycleChange,
 	inferMain,
 	METADATA_PART,
+	toMigrationSteps,
 	type UploadMetadata
 } from '../../../src/worker/upload.js';
 
@@ -76,6 +77,15 @@ describe('carriesLifecycleChange', () => {
 		expect(
 			carriesLifecycleChange({ migrations: [{ tag: 'v1', new_sqlite_classes: ['A'] }] })
 		).toBe(true);
+	});
+
+	it('reads a stepped migration object as a lifecycle change, and an empty one as none', () => {
+		expect(
+			carriesLifecycleChange({
+				migrations: { new_tag: 'v1', steps: [{ new_sqlite_classes: ['A'] }] }
+			})
+		).toBe(true);
+		expect(carriesLifecycleChange({ migrations: { new_tag: 'v1', steps: [] } })).toBe(false);
 	});
 
 	it('reads a non-created export state as a lifecycle change', () => {
@@ -174,5 +184,83 @@ describe('buildUpload', () => {
 				metadata: { bindings: [{ type: 'd1', name: 'DB' } as never] }
 			})
 		).toThrow(/needs id/);
+	});
+
+	it('sends a tagged migration list as the one stepped object the API takes', async () => {
+		const { body, metadata } = buildUpload({
+			source: fromFiles({ 'index.js': '' }),
+			main: 'index.js',
+			metadata: {
+				migrations: [
+					{ tag: 'v1', new_sqlite_classes: ['A'] },
+					{ tag: 'v2', new_sqlite_classes: ['B'] }
+				]
+			}
+		});
+		const expected = {
+			new_tag: 'v2',
+			steps: [{ new_sqlite_classes: ['A'] }, { new_sqlite_classes: ['B'] }]
+		};
+		expect((await metadataOf(body)).migrations).toEqual(expected);
+		expect(metadata.migrations).toEqual(expected);
+	});
+
+	it('passes an already stepped object through and drops a list with nothing to apply', async () => {
+		const steps = { old_tag: 'v1', new_tag: 'v2', steps: [{ new_sqlite_classes: ['B'] }] };
+		const stepped = buildUpload({
+			source: fromFiles({ 'index.js': '' }),
+			main: 'index.js',
+			metadata: { migrations: steps }
+		});
+		expect((await metadataOf(stepped.body)).migrations).toEqual(steps);
+
+		const none = buildUpload({
+			source: fromFiles({ 'index.js': '' }),
+			main: 'index.js',
+			metadata: { migrations: [{ tag: 'v1', new_sqlite_classes: ['A'] }] },
+			appliedMigrationTag: 'v1'
+		});
+		expect('migrations' in (await metadataOf(none.body))).toBe(false);
+	});
+});
+
+describe('toMigrationSteps', () => {
+	const list = [
+		{ tag: 'v1', new_sqlite_classes: ['A'] },
+		{ tag: 'v2', new_sqlite_classes: ['B'] },
+		{ tag: 'v3', renamed_classes: [{ from: 'A', to: 'C' }] }
+	];
+
+	it('applies every step to a first upload and names the last tag', () => {
+		expect(toMigrationSteps(list)).toEqual({
+			new_tag: 'v3',
+			steps: [
+				{ new_sqlite_classes: ['A'] },
+				{ new_sqlite_classes: ['B'] },
+				{ renamed_classes: [{ from: 'A', to: 'C' }] }
+			]
+		});
+	});
+
+	it('applies only what follows the tag the Worker carries', () => {
+		expect(toMigrationSteps(list, 'v1')).toEqual({
+			old_tag: 'v1',
+			new_tag: 'v3',
+			steps: [{ new_sqlite_classes: ['B'] }, { renamed_classes: [{ from: 'A', to: 'C' }] }]
+		});
+	});
+
+	it('has nothing to apply on the last tag or an empty list', () => {
+		expect(toMigrationSteps(list, 'v3')).toBeUndefined();
+		expect(toMigrationSteps([])).toBeUndefined();
+	});
+
+	it('applies every step after a tag that is no longer listed', () => {
+		expect(toMigrationSteps(list, 'v0')).toMatchObject({ old_tag: 'v0', new_tag: 'v3' });
+		expect(toMigrationSteps(list, 'v0')?.steps).toHaveLength(3);
+	});
+
+	it('refuses an entry without a tag', () => {
+		expect(() => toMigrationSteps([{ new_sqlite_classes: ['A'] }])).toThrow(/needs a tag/);
 	});
 });

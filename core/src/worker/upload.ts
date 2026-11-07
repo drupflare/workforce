@@ -47,6 +47,18 @@ export interface Migration {
 	transferred_classes?: { from: string; from_script: string; to: string }[];
 }
 
+/**
+ * What the upload API takes: one object whose steps apply in order after `old_tag`.
+ *
+ * A wrangler config lists tagged migrations instead, and {@link toMigrationSteps} converts one to
+ * the other, as wrangler does. The API refuses a list with a "cannot unmarshal array" error.
+ */
+export interface MigrationSteps {
+	old_tag?: string;
+	new_tag: string;
+	steps: Omit<Migration, 'tag' | 'old_tag' | 'new_tag'>[];
+}
+
 export interface ObservabilitySettings {
 	enabled: boolean;
 	head_sampling_rate?: number;
@@ -66,7 +78,8 @@ export interface UploadMetadata {
 	bindings?: Binding[];
 	compatibility_date?: string;
 	compatibility_flags?: string[];
-	migrations?: Migration[];
+	/** a wrangler-style tagged list, converted on upload, or the stepped object as the API takes it */
+	migrations?: Migration[] | MigrationSteps;
 	exports?: Record<string, DurableObjectExport>;
 	placement?: { mode?: string };
 	tags?: string[];
@@ -89,6 +102,11 @@ export interface UploadInput {
 	/** override the inferred type for a path, for a bundle that ships CommonJS or a raw blob */
 	types?: Record<string, ModuleType>;
 	metadata?: Omit<UploadMetadata, 'main_module'>;
+	/**
+	 * The migration tag the deployed Worker already carries, for an update. Migrations up to it are
+	 * left out, and the rest go with `old_tag` set. Leave it unset for a first upload.
+	 */
+	appliedMigrationTag?: string;
 }
 
 /** the name a Worker upload uses for the metadata part */
@@ -152,9 +170,39 @@ export function assertMetadata(metadata: UploadMetadata): void {
 	}
 }
 
+/**
+ * Converts a tagged migration list to the one object the upload API takes.
+ *
+ * Returns undefined when there is nothing to apply: an empty list, or a Worker that already carries
+ * the last tag. A tag the list does not hold (it may have been pruned) applies every step.
+ */
+export function toMigrationSteps(
+	migrations: readonly Migration[],
+	appliedTag?: string
+): MigrationSteps | undefined {
+	const last = migrations[migrations.length - 1];
+	if (last === undefined) return undefined;
+	for (const migration of migrations) {
+		if (migration.tag === undefined) throw new UsageError('every migration needs a tag');
+	}
+	const newTag = last.tag as string;
+	const applied =
+		appliedTag === undefined ? -1 : migrations.findIndex((m) => m.tag === appliedTag);
+	if (applied === migrations.length - 1) return undefined;
+	const steps = migrations
+		.slice(applied + 1)
+		.map(({ tag: _tag, old_tag: _old, new_tag: _new, ...step }) => step);
+	return appliedTag === undefined
+		? { new_tag: newTag, steps }
+		: { old_tag: appliedTag, new_tag: newTag, steps };
+}
+
 /** whether this upload changes a Durable Object's lifecycle, which several endpoints refuse */
 export function carriesLifecycleChange(metadata: UploadMetadata): boolean {
-	if ((metadata.migrations ?? []).length > 0) return true;
+	const { migrations } = metadata;
+	if (Array.isArray(migrations) ? migrations.length > 0 : (migrations?.steps.length ?? 0) > 0) {
+		return true;
+	}
 	return Object.values(metadata.exports ?? {}).some(
 		(declared) => declared.state !== undefined && declared.state !== 'created'
 	);
@@ -181,8 +229,13 @@ export function buildUpload(input: UploadInput): BuiltUpload {
 		throw new UsageError(`the entry point ${main} is not in the module set`);
 	}
 
-	const metadata: UploadMetadata = { ...input.metadata, main_module: main };
-	assertMetadata(metadata);
+	const given: UploadMetadata = { ...input.metadata, main_module: main };
+	assertMetadata(given);
+	const { migrations, ...rest } = given;
+	const wire = Array.isArray(migrations)
+		? toMigrationSteps(migrations, input.appliedMigrationTag)
+		: migrations;
+	const metadata: UploadMetadata = wire === undefined ? rest : { ...rest, migrations: wire };
 
 	const body = new FormData();
 	body.set(METADATA_PART, JSON.stringify(metadata));

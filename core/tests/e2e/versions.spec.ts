@@ -101,7 +101,7 @@ describe.skipIf(!run)('versions and deployments', () => {
 			'metadata',
 			JSON.stringify({
 				...metadata,
-				migrations: [{ tag: 'v1', new_sqlite_classes: ['Room'] }]
+				migrations: { new_tag: 'v1', steps: [{ new_sqlite_classes: ['Room'] }] }
 			})
 		);
 		await expect(
