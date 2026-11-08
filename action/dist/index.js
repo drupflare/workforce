@@ -36876,9 +36876,9 @@ function getOctokit(token, options, ...additionalPlugins) {
     return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 //# sourceMappingURL=github.js.map
-;// CONCATENATED MODULE: ../core/dist/chunk-4nmgzqby.js
+;// CONCATENATED MODULE: ../core/dist/chunk-s5rbp00z.js
 // src/client/errors.ts
-class WorkforceError extends Error {
+class WorkforceError2 extends Error {
   kind;
   constructor(kind, message, options) {
     super(message, options);
@@ -36887,13 +36887,13 @@ class WorkforceError extends Error {
   }
 }
 
-class chunk_4nmgzqby_AuthError extends WorkforceError {
+class chunk_s5rbp00z_AuthError2 extends WorkforceError2 {
   constructor(message, options) {
     super("auth", message, options);
   }
 }
 
-class chunk_4nmgzqby_ApiError extends WorkforceError {
+class chunk_s5rbp00z_ApiError2 extends WorkforceError2 {
   status;
   errors;
   constructor(message, status, errors = [], options) {
@@ -36906,7 +36906,7 @@ class chunk_4nmgzqby_ApiError extends WorkforceError {
   }
 }
 
-class LimitError extends WorkforceError {
+class LimitError2 extends WorkforceError2 {
   retryAfterMs;
   constructor(message, retryAfterMs = null, options) {
     super("limit", message, options);
@@ -36914,13 +36914,13 @@ class LimitError extends WorkforceError {
   }
 }
 
-class chunk_4nmgzqby_NotFoundError extends WorkforceError {
+class chunk_s5rbp00z_NotFoundError2 extends WorkforceError2 {
   constructor(message, options) {
     super("not-found", message, options);
   }
 }
 
-class CapabilityError extends WorkforceError {
+class CapabilityError2 extends WorkforceError2 {
   plane;
   capability;
   constructor(plane, capability, reason, options) {
@@ -36930,13 +36930,13 @@ class CapabilityError extends WorkforceError {
   }
 }
 
-class chunk_4nmgzqby_UsageError extends WorkforceError {
+class chunk_s5rbp00z_UsageError2 extends WorkforceError2 {
   constructor(message, options) {
     super("usage", message, options);
   }
 }
 
-class chunk_4nmgzqby_TransportError extends WorkforceError {
+class chunk_s5rbp00z_TransportError2 extends WorkforceError2 {
   constructor(message, options) {
     super("transport", message, options);
   }
@@ -36944,20 +36944,20 @@ class chunk_4nmgzqby_TransportError extends WorkforceError {
 
 
 
-//# debugId=105E89F48439C29B64756E2164756E21
-//# sourceMappingURL=chunk-4nmgzqby.js.map
+//# debugId=F4ED6079AE8583D664756E2164756E21
+//# sourceMappingURL=chunk-s5rbp00z.js.map
 
-;// CONCATENATED MODULE: ../core/dist/chunk-2cnbtxfx.js
+;// CONCATENATED MODULE: ../core/dist/chunk-1zde8ahs.js
 
 
 
 // src/worker/bindings.ts
-var OPAQUE_BINDING_TYPES = new Set([
+var OPAQUE_BINDING_TYPES2 = new Set([
   "secret_text",
   "secrets_store_secret"
 ]);
-function isOpaque(binding) {
-  if (!OPAQUE_BINDING_TYPES.has(binding.type))
+function isOpaque2(binding) {
+  if (!OPAQUE_BINDING_TYPES2.has(binding.type))
     return false;
   if (binding.type === "secret_text")
     return typeof binding.text !== "string" || binding.text === "";
@@ -36986,27 +36986,27 @@ var REQUIRED = {
   wasm_module: ["part"],
   workflow: ["workflow_name", "class_name"]
 };
-function assertBinding(binding) {
+function assertBinding2(binding) {
   if (typeof binding.name !== "string" || binding.name === "") {
-    throw new chunk_4nmgzqby_UsageError(`a ${binding.type} binding has no name`);
+    throw new chunk_s5rbp00z_UsageError2(`a ${binding.type} binding has no name`);
   }
   for (const field of REQUIRED[binding.type] ?? []) {
     if (binding[field] === undefined) {
-      throw new chunk_4nmgzqby_UsageError(`the ${binding.type} binding ${binding.name} needs ${field}`);
+      throw new chunk_s5rbp00z_UsageError2(`the ${binding.type} binding ${binding.name} needs ${field}`);
     }
   }
 }
-function assertBindings(bindings) {
+function assertBindings2(bindings) {
   const seen = new Set;
   for (const binding of bindings) {
-    assertBinding(binding);
+    assertBinding2(binding);
     if (seen.has(binding.name)) {
-      throw new chunk_4nmgzqby_UsageError(`two bindings are both named ${binding.name}`);
+      throw new chunk_s5rbp00z_UsageError2(`two bindings are both named ${binding.name}`);
     }
     seen.add(binding.name);
   }
 }
-function inherit(name, oldName) {
+function inherit2(name, oldName) {
   return oldName === undefined ? { type: "inherit", name } : { type: "inherit", name, old_name: oldName };
 }
 function sameBinding(a, b) {
@@ -37017,7 +37017,7 @@ function sameBinding(a, b) {
 function sortedEntries(value) {
   return Object.entries(value).sort(([x], [y]) => x.localeCompare(y));
 }
-function diffBindings(before, after) {
+function diffBindings2(before, after) {
   const byName = new Map(before.map((b) => [b.name, b]));
   const diff = { added: [], changed: [], removed: [], opaque: [] };
   for (const next of after) {
@@ -37027,7 +37027,7 @@ function diffBindings(before, after) {
       continue;
     }
     byName.delete(next.name);
-    if (isOpaque(previous) || isOpaque(next)) {
+    if (isOpaque2(previous) || isOpaque2(next)) {
       diff.opaque.push(next.name);
       continue;
     }
@@ -37038,8 +37038,8 @@ function diffBindings(before, after) {
     diff.removed.push(remaining);
   return diff;
 }
-function patchBindings(current, changes) {
-  assertBindings(changes);
+function patchBindings2(current, changes) {
+  assertBindings2(changes);
   const changed = new Map(changes.map((b) => [b.name, b]));
   const out = [];
   for (const existing of current) {
@@ -37048,18 +37048,18 @@ function patchBindings(current, changes) {
       out.push(replacement);
       changed.delete(existing.name);
     } else {
-      out.push(inherit(existing.name));
+      out.push(inherit2(existing.name));
     }
   }
   for (const added of changed.values())
     out.push(added);
-  assertBindings(out);
+  assertBindings2(out);
   return out;
 }
 
 // src/revisions/diff.ts
 var TEXT = /^[\s\S]*$/;
-function isTextual(bytes) {
+function isTextual2(bytes) {
   const sample = bytes.subarray(0, 8000);
   for (const byte of sample) {
     if (byte === 0)
@@ -37075,17 +37075,17 @@ function sameBytes(a, b) {
       return false;
   return true;
 }
-function diffLines(before, after) {
+function diffLines2(before, after) {
   const a = before.split(`
 `);
   const b = after.split(`
 `);
   const lengths = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
-  for (let i2 = a.length - 1;i2 >= 0; i2 -= 1) {
-    for (let j2 = b.length - 1;j2 >= 0; j2 -= 1) {
-      const row = lengths[i2];
-      const next = lengths[i2 + 1];
-      row[j2] = a[i2] === b[j2] ? next[j2 + 1] + 1 : Math.max(next[j2], row[j2 + 1]);
+  for (let i = a.length - 1;i >= 0; i -= 1) {
+    for (let j = b.length - 1;j >= 0; j -= 1) {
+      const row = lengths[i];
+      const next = lengths[i + 1];
+      row[j] = a[i] === b[j] ? next[j + 1] + 1 : Math.max(next[j], row[j + 1]);
     }
   }
   const out = [];
@@ -37118,7 +37118,7 @@ function diffLines(before, after) {
   }
   return out;
 }
-function diffModules(before, after) {
+function diffModules2(before, after) {
   const paths = [...new Set([...before.keys(), ...after.keys()])].sort();
   return paths.map((path) => {
     const a = before.get(path);
@@ -37143,8 +37143,8 @@ function diffModules(before, after) {
       beforeBytes: a.byteLength,
       afterBytes: b.byteLength
     };
-    if (isTextual(a) && isTextual(b))
-      diff.lines = diffLines(toUtf8(a), toUtf8(b));
+    if (isTextual2(a) && isTextual2(b))
+      diff.lines = diffLines2(toUtf82(a), toUtf82(b));
     return diff;
   });
 }
@@ -37156,11 +37156,11 @@ function setDiff(before, after) {
     removed: before.filter((v) => !has.has(v)).sort()
   };
 }
-function diffWorkers(before, after) {
+function diffWorkers2(before, after) {
   const missing = before.modules === null && after.modules === null ? "both" : before.modules === null ? "before" : after.modules === null ? "after" : null;
   return {
-    files: before.modules !== null && after.modules !== null ? diffModules(before.modules, after.modules) : [],
-    bindings: diffBindings(before.bindings, after.bindings),
+    files: before.modules !== null && after.modules !== null ? diffModules2(before.modules, after.modules) : [],
+    bindings: diffBindings2(before.bindings, after.bindings),
     compatibilityDate: before.compatibilityDate === after.compatibilityDate ? null : { before: before.compatibilityDate, after: after.compatibilityDate },
     compatibilityFlags: setDiff(before.compatibilityFlags, after.compatibilityFlags),
     tags: setDiff(before.tags, after.tags),
@@ -37168,7 +37168,7 @@ function diffWorkers(before, after) {
     contentUnavailable: missing
   };
 }
-function hasChanges(diff) {
+function hasChanges2(diff) {
   if (diff.files.some((f) => f.change !== "unchanged"))
     return true;
   if (diff.bindings.added.length + diff.bindings.changed.length + diff.bindings.removed.length > 0) {
@@ -37182,10 +37182,10 @@ function hasChanges(diff) {
 
 
 
-//# debugId=B324505E37632A3264756E2164756E21
-//# sourceMappingURL=chunk-2cnbtxfx.js.map
+//# debugId=39F4A42EB668FF9264756E2164756E21
+//# sourceMappingURL=chunk-1zde8ahs.js.map
 
-;// CONCATENATED MODULE: ../core/dist/chunk-7b4jdpbr.js
+;// CONCATENATED MODULE: ../core/dist/chunk-7pjth1pj.js
 
 
 // ../node_modules/.bun/@drupflare+untarl@0.1.0/node_modules/@drupflare/untarl/src/untar.ts
@@ -37393,7 +37393,7 @@ function tarEntryTree(entries, strip = 1) {
 }
 
 // src/source.ts
-var MODULE_CONTENT_TYPE = {
+var MODULE_CONTENT_TYPE2 = {
   esm: "application/javascript+module",
   commonjs: "application/javascript",
   text: "text/plain",
@@ -37413,38 +37413,38 @@ var BY_EXTENSION = {
   css: "text",
   json: "text"
 };
-function moduleTypeOf(path) {
+function moduleTypeOf2(path) {
   const dot = path.lastIndexOf(".");
   if (dot === -1)
     return "data";
   return BY_EXTENSION[path.slice(dot + 1).toLowerCase()] ?? "data";
 }
 var encoder = new TextEncoder;
-function chunk_7b4jdpbr_asBinary(bytes) {
+function chunk_7pjth1pj_asBinary2(bytes) {
   const copy = new ArrayBuffer(bytes.byteLength);
   new Uint8Array(copy).set(bytes);
   return copy;
 }
-function toBytes(value) {
+function toBytes2(value) {
   return typeof value === "string" ? encoder.encode(value) : value;
 }
-function chunk_7b4jdpbr_fromUtf8(value) {
+function chunk_7pjth1pj_fromUtf82(value) {
   return encoder.encode(value);
 }
-function chunk_7b4jdpbr_toUtf8(bytes) {
+function chunk_7pjth1pj_toUtf82(bytes) {
   return new TextDecoder().decode(bytes);
 }
-function normalisePath(path) {
+function normalisePath2(path) {
   return path.replace(/^\.?\//, "");
 }
-function fromFiles(files) {
+function fromFiles2(files) {
   const out = new Map;
   const entries = files instanceof Map ? files.entries() : Object.entries(files);
   for (const [path, value] of entries)
-    out.set(normalisePath(path), toBytes(value));
+    out.set(normalisePath2(path), toBytes2(value));
   return out;
 }
-function isGzip(bytes) {
+function isGzip2(bytes) {
   return bytes.length >= 2 && bytes[0] === 31 && bytes[1] === 139;
 }
 async function readAll(stream) {
@@ -37460,45 +37460,45 @@ function treeOf(entries, options) {
       out.set(path, bytes);
   return out;
 }
-async function fromTarball(input, options = {}) {
+async function fromTarball2(input, options = {}) {
   if (input instanceof Response) {
     if (!input.ok) {
-      throw new UsageError(`the tarball request answered HTTP ${input.status}`);
+      throw new UsageError2(`the tarball request answered HTTP ${input.status}`);
     }
     if (input.body === null)
-      throw new UsageError("the tarball response had no body");
-    return fromTarball(input.body, options);
+      throw new UsageError2("the tarball response had no body");
+    return fromTarball2(input.body, options);
   }
   if (input instanceof Request) {
     if (input.body === null)
-      throw new UsageError("the tarball request had no body");
-    return fromTarball(input.body, options);
+      throw new UsageError2("the tarball request had no body");
+    return fromTarball2(input.body, options);
   }
   if (input instanceof ReadableStream) {
-    const bytes2 = await readAll(input);
-    return fromTarball(bytes2, options);
+    const bytes = await readAll(input);
+    return fromTarball2(bytes, options);
   }
   const bytes = input instanceof ArrayBuffer ? new Uint8Array(input) : input;
-  if (isGzip(bytes)) {
-    const stream = new Response(chunk_7b4jdpbr_asBinary(bytes)).body;
+  if (isGzip2(bytes)) {
+    const stream = new Response(chunk_7pjth1pj_asBinary2(bytes)).body;
     if (stream === null)
-      throw new UsageError("could not stream the gzip payload");
+      throw new UsageError2("could not stream the gzip payload");
     return treeOf(await untarGzip(stream), options);
   }
   return treeOf(parseTar(bytes), options);
 }
 var GITHUB_REPO = /^(?:https?:\/\/)?(?:www\.)?github\.com\/([^/\s]+)\/([^/\s#?]+?)(?:\.git)?(?:[/#?].*)?$/i;
-function parseGitHubRepo(url) {
+function parseGitHubRepo2(url) {
   const direct = /^([\w.-]+)\/([\w.-]+)$/.exec(url.trim());
   if (direct !== null)
     return { owner: direct[1], repo: direct[2] };
   const matched = GITHUB_REPO.exec(url.trim());
   if (matched === null)
-    throw new UsageError(`not a GitHub repository: ${url}`);
+    throw new UsageError2(`not a GitHub repository: ${url}`);
   return { owner: matched[1], repo: matched[2] };
 }
-async function fromGitHub(url, options = {}) {
-  const { owner, repo } = parseGitHubRepo(url);
+async function fromGitHub2(url, options = {}) {
+  const { owner, repo } = parseGitHubRepo2(url);
   const ref = options.ref ?? "HEAD";
   const fetcher = options.fetch ?? globalThis.fetch.bind(globalThis);
   const headers = { accept: "application/vnd.github+json" };
@@ -37506,11 +37506,11 @@ async function fromGitHub(url, options = {}) {
     headers.authorization = `Bearer ${options.token}`;
   const response = await fetcher(`https://codeload.github.com/${owner}/${repo}/tar.gz/${encodeURIComponent(ref)}`, { headers });
   if (!response.ok) {
-    throw new UsageError(`could not fetch ${owner}/${repo}@${ref}: HTTP ${response.status}${response.status === 404 ? " (private repositories need a token)" : ""}`);
+    throw new UsageError2(`could not fetch ${owner}/${repo}@${ref}: HTTP ${response.status}${response.status === 404 ? " (private repositories need a token)" : ""}`);
   }
-  return fromTarball(response, { strip: 1, ...options });
+  return fromTarball2(response, { strip: 1, ...options });
 }
-async function fromRequest(request, options = {}) {
+async function fromRequest2(request, options = {}) {
   const type = request.headers.get("content-type") ?? "";
   if (type.includes("multipart/form-data")) {
     const form = await request.formData();
@@ -37518,20 +37518,20 @@ async function fromRequest(request, options = {}) {
     for (const [name, value] of form.entries()) {
       const part = value;
       if (typeof part === "string") {
-        out.set(normalisePath(name), chunk_7b4jdpbr_fromUtf8(part));
+        out.set(normalisePath2(name), chunk_7pjth1pj_fromUtf82(part));
         continue;
       }
       const file = part;
       const named = typeof file.name === "string" && file.name !== "" ? file.name : name;
-      out.set(normalisePath(named), new Uint8Array(await file.arrayBuffer()));
+      out.set(normalisePath2(named), new Uint8Array(await file.arrayBuffer()));
     }
     return out;
   }
-  return fromTarball(request, options);
+  return fromTarball2(request, options);
 }
-var FREE_SUBREQUEST_LIMIT = 50;
-var DEFAULT_ASSET_BUDGET = 40;
-function readAssetManifest(body) {
+var FREE_SUBREQUEST_LIMIT2 = 50;
+var DEFAULT_ASSET_BUDGET2 = 40;
+function readAssetManifest2(body) {
   if (Array.isArray(body))
     return body.filter((p) => typeof p === "string");
   if (body !== null && typeof body === "object") {
@@ -37542,18 +37542,18 @@ function readAssetManifest(body) {
     }
     return Object.keys(record);
   }
-  throw new UsageError("the asset manifest is neither a list of paths nor an object keyed by path");
+  throw new UsageError2("the asset manifest is neither a list of paths nor an object keyed by path");
 }
-async function fromAssets(binding, manifestPath, options = {}) {
+async function fromAssets2(binding, manifestPath, options = {}) {
   let manifest = options.manifest;
   if (manifest === undefined) {
-    const response = await binding.fetch(`https://assets.local/${normalisePath(manifestPath)}`);
+    const response = await binding.fetch(`https://assets.local/${normalisePath2(manifestPath)}`);
     if (!response.ok) {
-      throw new UsageError(`the asset manifest ${manifestPath} answered HTTP ${response.status}; without it there is nothing to enumerate`);
+      throw new UsageError2(`the asset manifest ${manifestPath} answered HTTP ${response.status}; without it there is nothing to enumerate`);
     }
-    manifest = readAssetManifest(await response.json());
+    manifest = readAssetManifest2(await response.json());
   }
-  const budget = Math.max(1, options.budget ?? DEFAULT_ASSET_BUDGET);
+  const budget = Math.max(1, options.budget ?? DEFAULT_ASSET_BUDGET2);
   const start = options.cursor?.index ?? 0;
   const modules = new Map;
   const missing = [];
@@ -37561,7 +37561,7 @@ async function fromAssets(binding, manifestPath, options = {}) {
   let spent = 0;
   while (index < manifest.length && spent < budget) {
     const path = manifest[index];
-    const response = await binding.fetch(`https://assets.local/${normalisePath(path)}`);
+    const response = await binding.fetch(`https://assets.local/${normalisePath2(path)}`);
     spent += 1;
     index += 1;
     if (!response.ok) {
@@ -37569,7 +37569,7 @@ async function fromAssets(binding, manifestPath, options = {}) {
       continue;
     }
     const name = options.rename === undefined ? path : options.rename(path);
-    modules.set(normalisePath(name), new Uint8Array(await response.arrayBuffer()));
+    modules.set(normalisePath2(name), new Uint8Array(await response.arrayBuffer()));
   }
   const done = index >= manifest.length;
   return done ? { modules, done, missing } : { modules, done, cursor: { index }, missing };
@@ -37577,8 +37577,8 @@ async function fromAssets(binding, manifestPath, options = {}) {
 
 
 
-//# debugId=F2CE5B14914B081764756E2164756E21
-//# sourceMappingURL=chunk-7b4jdpbr.js.map
+//# debugId=DAC1BCFAD7A1C30964756E2164756E21
+//# sourceMappingURL=chunk-7pjth1pj.js.map
 
 ;// CONCATENATED MODULE: ../core/dist/index.js
 
@@ -37589,7 +37589,7 @@ async function fromAssets(binding, manifestPath, options = {}) {
 var SESSION_TTL_MS = 60 * 60 * 1000;
 var SESSION_MARGIN_MS = 5 * 60 * 1000;
 async function hashAsset(bytes) {
-  const digest = await crypto.subtle.digest("SHA-256", chunk_7b4jdpbr_asBinary(bytes));
+  const digest = await crypto.subtle.digest("SHA-256", chunk_7pjth1pj_asBinary2(bytes));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("").slice(0, 32);
 }
 async function buildManifest(tree) {
@@ -37665,7 +37665,7 @@ async function syncAssets(api, tree, options = {}) {
     const files = bucket.map((hash) => {
       const bytes = byHash.get(hash);
       if (bytes === undefined) {
-        throw new chunk_4nmgzqby_UsageError(`the session asked for ${hash}, which is not in the tree it was built from`);
+        throw new chunk_s5rbp00z_UsageError2(`the session asked for ${hash}, which is not in the tree it was built from`);
       }
       return { hash, bytes };
     });
@@ -37673,7 +37673,7 @@ async function syncAssets(api, tree, options = {}) {
     uploaded += files.length;
   }
   if (token === "") {
-    throw new chunk_4nmgzqby_UsageError("the asset upload finished without returning a completion token");
+    throw new chunk_s5rbp00z_UsageError2("the asset upload finished without returning a completion token");
   }
   return { completionToken: token, uploaded, reused: tree.size - uploaded, manifest };
 }
@@ -37686,7 +37686,7 @@ function cannot(reason) {
 function requireCapability(plane, name) {
   const capability = plane.capabilities[name];
   if (!capability.supported) {
-    throw new CapabilityError(plane.kind, name, capability.reason);
+    throw new CapabilityError2(plane.kind, name, capability.reason);
   }
 }
 
@@ -37759,55 +37759,75 @@ function inferMain(source) {
     if (source.has(candidate))
       return candidate;
   }
-  const scripts = names.filter((n) => moduleTypeOf(n) === "esm" || moduleTypeOf(n) === "commonjs");
+  const scripts = names.filter((n) => moduleTypeOf2(n) === "esm" || moduleTypeOf2(n) === "commonjs");
   if (scripts.length === 1)
     return scripts[0];
   if (scripts.length === 0) {
-    throw new chunk_4nmgzqby_UsageError("the module set holds no JavaScript, so there is no entry point");
+    throw new chunk_s5rbp00z_UsageError2("the module set holds no JavaScript, so there is no entry point");
   }
-  throw new chunk_4nmgzqby_UsageError(`the module set holds ${scripts.length} scripts and none is named index.js, so name the entry point explicitly`);
+  throw new chunk_s5rbp00z_UsageError2(`the module set holds ${scripts.length} scripts and none is named index.js, so name the entry point explicitly`);
 }
 function assertMetadata(metadata) {
   if (metadata.exports !== undefined && metadata.migrations !== undefined) {
-    throw new chunk_4nmgzqby_UsageError("exports and migrations cannot both be set; a Worker deployed with exports keeps using exports");
+    throw new chunk_s5rbp00z_UsageError2("exports and migrations cannot both be set; a Worker deployed with exports keeps using exports");
   }
   if (metadata.bindings !== undefined)
-    assertBindings(metadata.bindings);
+    assertBindings2(metadata.bindings);
   if (metadata.compatibility_date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(metadata.compatibility_date)) {
-    throw new chunk_4nmgzqby_UsageError(`compatibility_date must be YYYY-MM-DD, not ${metadata.compatibility_date}`);
+    throw new chunk_s5rbp00z_UsageError2(`compatibility_date must be YYYY-MM-DD, not ${metadata.compatibility_date}`);
   }
   for (const [name, declared] of Object.entries(metadata.exports ?? {})) {
     if (declared.state === "renamed" && declared.renamed_to === undefined) {
-      throw new chunk_4nmgzqby_UsageError(`the renamed export ${name} needs renamed_to`);
+      throw new chunk_s5rbp00z_UsageError2(`the renamed export ${name} needs renamed_to`);
     }
     if (declared.state === "transferred" && declared.transferred_to === undefined) {
-      throw new chunk_4nmgzqby_UsageError(`the transferred export ${name} needs transferred_to`);
+      throw new chunk_s5rbp00z_UsageError2(`the transferred export ${name} needs transferred_to`);
     }
     if (declared.state === "expecting-transfer" && declared.transfer_from === undefined) {
-      throw new chunk_4nmgzqby_UsageError(`the export ${name} expecting a transfer needs transfer_from`);
+      throw new chunk_s5rbp00z_UsageError2(`the export ${name} expecting a transfer needs transfer_from`);
     }
   }
 }
+function toMigrationSteps(migrations, appliedTag) {
+  const last = migrations[migrations.length - 1];
+  if (last === undefined)
+    return;
+  for (const migration of migrations) {
+    if (migration.tag === undefined)
+      throw new chunk_s5rbp00z_UsageError2("every migration needs a tag");
+  }
+  const newTag = last.tag;
+  const applied = appliedTag === undefined ? -1 : migrations.findIndex((m) => m.tag === appliedTag);
+  if (applied === migrations.length - 1)
+    return;
+  const steps = migrations.slice(applied + 1).map(({ tag: _tag, old_tag: _old, new_tag: _new, ...step }) => step);
+  return appliedTag === undefined ? { new_tag: newTag, steps } : { old_tag: appliedTag, new_tag: newTag, steps };
+}
 function carriesLifecycleChange(metadata) {
-  if ((metadata.migrations ?? []).length > 0)
+  const { migrations } = metadata;
+  if (Array.isArray(migrations) ? migrations.length > 0 : (migrations?.steps.length ?? 0) > 0) {
     return true;
+  }
   return Object.values(metadata.exports ?? {}).some((declared) => declared.state !== undefined && declared.state !== "created");
 }
 function buildUpload(input) {
   if (input.source.size === 0) {
-    throw new chunk_4nmgzqby_UsageError("the module set is empty, so there is nothing to upload");
+    throw new chunk_s5rbp00z_UsageError2("the module set is empty, so there is nothing to upload");
   }
-  const main = normalisePath(input.main ?? inferMain(input.source));
+  const main = normalisePath2(input.main ?? inferMain(input.source));
   if (!input.source.has(main)) {
-    throw new chunk_4nmgzqby_UsageError(`the entry point ${main} is not in the module set`);
+    throw new chunk_s5rbp00z_UsageError2(`the entry point ${main} is not in the module set`);
   }
-  const metadata = { ...input.metadata, main_module: main };
-  assertMetadata(metadata);
+  const given = { ...input.metadata, main_module: main };
+  assertMetadata(given);
+  const { migrations, ...rest } = given;
+  const wire = Array.isArray(migrations) ? toMigrationSteps(migrations, input.appliedMigrationTag) : migrations;
+  const metadata = wire === undefined ? rest : { ...rest, migrations: wire };
   const body = new FormData;
   body.set(METADATA_PART, JSON.stringify(metadata));
   for (const [path, bytes] of input.source) {
-    const type = input.types?.[path] ?? moduleTypeOf(path);
-    body.set(path, new Blob([chunk_7b4jdpbr_asBinary(bytes)], { type: MODULE_CONTENT_TYPE[type] }), path);
+    const type = input.types?.[path] ?? moduleTypeOf2(path);
+    body.set(path, new Blob([chunk_7pjth1pj_asBinary2(bytes)], { type: MODULE_CONTENT_TYPE2[type] }), path);
   }
   return { body, metadata };
 }
@@ -37829,7 +37849,7 @@ function versionOf(row) {
 }
 function assertVersionable(metadata) {
   if (carriesLifecycleChange(metadata)) {
-    throw new chunk_4nmgzqby_UsageError("this upload changes a Durable Object lifecycle, which cannot be uploaded as a version: lifecycle changes are atomic at the control plane. Deploy it directly instead, on its own.");
+    throw new chunk_s5rbp00z_UsageError2("this upload changes a Durable Object lifecycle, which cannot be uploaded as a version: lifecycle changes are atomic at the control plane. Deploy it directly instead, on its own.");
   }
 }
 function assertGradualAllowed(slices, metadata) {
@@ -37837,29 +37857,29 @@ function assertGradualAllowed(slices, metadata) {
   if (!gradual)
     return;
   if (metadata !== null && metadata.exports !== undefined) {
-    throw new chunk_4nmgzqby_UsageError("a gradual deployment is not supported on a Worker configured with exports; deploy one version at 100 percent");
+    throw new chunk_s5rbp00z_UsageError2("a gradual deployment is not supported on a Worker configured with exports; deploy one version at 100 percent");
   }
 }
 function assertSlices(slices) {
   if (slices.length === 0)
-    throw new chunk_4nmgzqby_UsageError("a deployment needs at least one version");
+    throw new chunk_s5rbp00z_UsageError2("a deployment needs at least one version");
   for (const slice of slices) {
     if (slice.percentage < 0 || slice.percentage > 100) {
-      throw new chunk_4nmgzqby_UsageError(`${slice.version} is at ${slice.percentage} percent, which is not a share of a deployment`);
+      throw new chunk_s5rbp00z_UsageError2(`${slice.version} is at ${slice.percentage} percent, which is not a share of a deployment`);
     }
   }
   const total = slices.reduce((n, s) => n + s.percentage, 0);
   if (Math.abs(total - 100) > 0.01) {
-    throw new chunk_4nmgzqby_UsageError(`deployment percentages total ${total}, and they have to total 100`);
+    throw new chunk_s5rbp00z_UsageError2(`deployment percentages total ${total}, and they have to total 100`);
   }
 }
 function assertReachable(versions, id) {
   const at = versions.findIndex((v) => v.id === id);
   if (at === -1) {
-    throw new chunk_4nmgzqby_UsageError(`version ${id} is not among the ${versions.length} versions this Worker still has; only the ${REACHABLE_VERSIONS} most recent are reachable`);
+    throw new chunk_s5rbp00z_UsageError2(`version ${id} is not among the ${versions.length} versions this Worker still has; only the ${REACHABLE_VERSIONS} most recent are reachable`);
   }
   if (at >= REACHABLE_VERSIONS) {
-    throw new chunk_4nmgzqby_UsageError(`version ${id} is ${at + 1} versions back, and only the ${REACHABLE_VERSIONS} most recent are reachable`);
+    throw new chunk_s5rbp00z_UsageError2(`version ${id} is ${at + 1} versions back, and only the ${REACHABLE_VERSIONS} most recent are reachable`);
   }
 }
 function assertNoLifecycleCrossing(versions, fromId, toId, lifecycleVersionIds) {
@@ -37871,7 +37891,7 @@ function assertNoLifecycleCrossing(versions, fromId, toId, lifecycleVersionIds) 
   for (let at = newer;at < older; at += 1) {
     const version = versions[at];
     if (version !== undefined && lifecycleVersionIds.has(version.id)) {
-      throw new chunk_4nmgzqby_UsageError(`rolling back across version ${version.id} would cross a Durable Object lifecycle change, which re-pointing a deployment cannot undo`);
+      throw new chunk_s5rbp00z_UsageError2(`rolling back across version ${version.id} would cross a Durable Object lifecycle change, which re-pointing a deployment cannot undo`);
     }
   }
 }
@@ -37987,7 +38007,7 @@ class WorkerHandle {
   async require() {
     const summary = await this.plane.get(this.name);
     if (summary === null) {
-      throw new chunk_4nmgzqby_NotFoundError(`no Worker named ${this.name} on ${this.plane.target}`);
+      throw new chunk_s5rbp00z_NotFoundError2(`no Worker named ${this.name} on ${this.plane.target}`);
     }
     return summary;
   }
@@ -38007,7 +38027,7 @@ class WorkerHandle {
     const current = await this.plane.settings(this.name);
     return this.plane.patchSettings(this.name, {
       ...changes,
-      bindings: patchBindings(current.bindings, changes.bindings)
+      bindings: patchBindings2(current.bindings, changes.bindings)
     });
   }
   async replaceBindings(bindings) {
@@ -38035,7 +38055,7 @@ class WorkerHandle {
     requireCapability(this.plane, "versions");
     const accountBase = this.plane.base;
     if (accountBase === undefined) {
-      throw new chunk_4nmgzqby_UsageError(`the ${this.plane.kind} plane has versions of its own rather than under a Cloudflare script path; reach them on the plane`);
+      throw new chunk_s5rbp00z_UsageError2(`the ${this.plane.kind} plane has versions of its own rather than under a Cloudflare script path; reach them on the plane`);
     }
     return new VersionsApi(this.plane, this.name, this.plane.http, accountBase);
   }
@@ -38051,13 +38071,13 @@ class WorkerHandle {
       const accountId = this.plane.accountId ?? "";
       const base = this.plane.base;
       if (base === undefined) {
-        throw new chunk_4nmgzqby_UsageError(`the ${this.plane.kind} plane serves assets out of the bundle it was deployed rather than through an upload session; put them in the source you upload`);
+        throw new chunk_s5rbp00z_UsageError2(`the ${this.plane.kind} plane serves assets out of the bundle it was deployed rather than through an upload session; put them in the source you upload`);
       }
       return syncAssets(assetsApi(this.plane.http, accountId, `${base}/scripts/${this.name}/assets-upload-session`), tree);
     }
   };
   _encode(value) {
-    return chunk_7b4jdpbr_fromUtf8(value);
+    return chunk_7pjth1pj_fromUtf82(value);
   }
 }
 
@@ -38230,7 +38250,7 @@ class Budget {
   assertAvailable() {
     this.rollWindow();
     if (this.remaining <= this.floor()) {
-      throw new LimitError(`the API budget is down to ${this.remaining} of ${this.quota} and the reserve holds ${this.floor()} back`, Math.max(0, this.windowEndsAtMs - this.now()));
+      throw new LimitError2(`the API budget is down to ${this.remaining} of ${this.quota} and the reserve holds ${this.floor()} back`, Math.max(0, this.windowEndsAtMs - this.now()));
     }
   }
 }
@@ -38277,20 +38297,20 @@ async function readEnvelope(response, what) {
   try {
     body = await response.json();
   } catch (cause) {
-    throw new chunk_4nmgzqby_TransportError(`${what}: HTTP ${response.status} with a non-JSON body`, {
+    throw new chunk_s5rbp00z_TransportError2(`${what}: HTTP ${response.status} with a non-JSON body`, {
       cause
     });
   }
   const details = detailsOf(body);
   const detail = details.map((d) => d.message).join("; ");
   if (response.status === 401 || response.status === 403) {
-    throw new chunk_4nmgzqby_AuthError(`${what}: HTTP ${response.status}, the credential was rejected${detail === "" ? "" : ` (${detail})`}`);
+    throw new chunk_s5rbp00z_AuthError2(`${what}: HTTP ${response.status}, the credential was rejected${detail === "" ? "" : ` (${detail})`}`);
   }
   if (response.status === 404) {
-    throw new chunk_4nmgzqby_NotFoundError(`${what}: not found${detail === "" ? "" : ` (${detail})`}`);
+    throw new chunk_s5rbp00z_NotFoundError2(`${what}: not found${detail === "" ? "" : ` (${detail})`}`);
   }
   if (body.success === false || body.result === undefined) {
-    throw new chunk_4nmgzqby_ApiError(`${what}: ${detail === "" ? `HTTP ${response.status}` : detail}`, response.status, details);
+    throw new chunk_s5rbp00z_ApiError2(`${what}: ${detail === "" ? `HTTP ${response.status}` : detail}`, response.status, details);
   }
   return body.result;
 }
@@ -38350,7 +38370,7 @@ class HttpClient {
       } catch (cause) {
         this.budget.release();
         if (attempt >= this.retries) {
-          throw new chunk_4nmgzqby_TransportError(`${options.method ?? "GET"} ${path} never answered`, {
+          throw new chunk_s5rbp00z_TransportError2(`${options.method ?? "GET"} ${path} never answered`, {
             cause
           });
         }
@@ -38363,7 +38383,7 @@ class HttpClient {
       if (response.status === 429) {
         const wait = this.budget.penalise(response.headers);
         if (attempt >= this.retries) {
-          throw new LimitError(`${options.method ?? "GET"} ${path}: rate limited, and the whole account is blocked until this window resets`, wait);
+          throw new LimitError2(`${options.method ?? "GET"} ${path}: rate limited, and the whole account is blocked until this window resets`, wait);
         }
         await this.sleep(wait);
         attempt += 1;
@@ -38395,7 +38415,7 @@ class Hub {
   }
   add(name, plane) {
     if (this.planes.has(name)) {
-      throw new UsageError(`the hub already holds a plane named ${name}`);
+      throw new UsageError2(`the hub already holds a plane named ${name}`);
     }
     this.planes.set(name, plane);
     return this;
@@ -38404,7 +38424,7 @@ class Hub {
     const plane = this.planes.get(name);
     if (plane === undefined) {
       const known = [...this.planes.keys()].join(", ");
-      throw new UsageError(`no plane named ${name} in this hub${known === "" ? "" : `; it holds ${known}`}`);
+      throw new UsageError2(`no plane named ${name} in this hub${known === "" ? "" : `; it holds ${known}`}`);
     }
     return plane;
   }
@@ -38455,10 +38475,10 @@ function forkDurableObjects(mode, sourceName, metadata) {
 function planFork(input, sourceSecretNames = []) {
   const mode = input.durableObjects ?? "fresh";
   if (mode === "transfer" && input.confirmTransfer !== true) {
-    throw new UsageError("a transfer MOVES the Durable Object namespace and its data off the source; pass confirmTransfer to mean it");
+    throw new UsageError2("a transfer MOVES the Durable Object namespace and its data off the source; pass confirmTransfer to mean it");
   }
   if (input.source === input.target) {
-    throw new UsageError("a fork needs a different name than its source");
+    throw new UsageError2("a fork needs a different name than its source");
   }
   const base = { ...input.metadata };
   const { metadata, followUp } = forkDurableObjects(mode, input.source, base);
@@ -38583,19 +38603,52 @@ async function mapFleet(items, fn, options = {}) {
 async function applyPlan(plan, run, options = {}) {
   const actionable = plan.actions.filter((a) => a.kind !== "unchanged");
   const skipped = plan.actions.filter((a) => a.kind === "unchanged").map((a) => a.worker);
-  const start = options.cursor?.index ?? 0;
-  const limit = options.budgetActions ?? actionable.length;
-  const slice = actionable.slice(start, start + limit);
-  const result = await mapFleet(slice, async (action) => run(action), options);
-  const end = start + slice.length;
-  const done = end >= actionable.length;
+  const digest = await digestOf(plan);
+  if (options.cursor !== undefined && options.cursor.digest !== digest) {
+    throw new UsageError2("this cursor belongs to a different plan; start the apply again from this one");
+  }
+  const states = options.cursor?.states.slice() ?? actionable.map(() => "pending");
+  const pending = actionable.map((_, i) => i).filter((i) => states[i] !== "succeeded");
+  const batch = pending.slice(0, options.budgetActions ?? pending.length);
+  let stopped;
+  const transition = async (i, state) => {
+    states[i] = state;
+    try {
+      await options.onTransition?.({ digest, states: states.slice() });
+    } catch (error) {
+      if (stopped === undefined)
+        stopped = { error };
+      throw error;
+    }
+  };
+  const workerOf = (i) => actionable[i].worker;
+  const result = await mapFleet(batch, async (i) => {
+    if (stopped !== undefined)
+      return;
+    await transition(i, "running");
+    try {
+      await run(actionable[i]);
+    } catch (error) {
+      await transition(i, "failed");
+      throw error;
+    }
+    await transition(i, "succeeded");
+  }, options);
+  if (stopped !== undefined)
+    throw stopped.error;
+  const done = states.every((state) => state === "succeeded");
   const report = {
-    applied: result.succeeded.map((o) => o.item.worker),
-    failed: result.failed.map((o) => ({ worker: o.item.worker, error: o.error })),
+    applied: result.succeeded.map((o) => workerOf(o.item)),
+    failed: result.failed.map((o) => ({ worker: workerOf(o.item), error: o.error })),
     skipped,
     done
   };
-  return done ? report : { ...report, cursor: { index: end } };
+  return done ? report : { ...report, cursor: { digest, states } };
+}
+async function digestOf(plan) {
+  const text = JSON.stringify(plan.actions.map((a) => [a.kind, a.worker, a.changes, a.desired ?? null]));
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 // src/fleet/inventory.ts
 var TAG_KEYS = (/* unused pure expression or super */ null && (["wf:env", "wf:owner", "wf:ttl", "wf:rev"]));
@@ -38611,7 +38664,7 @@ function encodeTags(record) {
   if (record.revision != null)
     tags.push(`wf:rev=${record.revision}`);
   if (tags.length > MAX_TAGS) {
-    throw new UsageError(`${tags.length} tags is past the ${MAX_TAGS} a script may carry; put the rest in the store`);
+    throw new UsageError2(`${tags.length} tags is past the ${MAX_TAGS} a script may carry; put the rest in the store`);
   }
   return tags;
 }
@@ -38663,6 +38716,7 @@ function planeInventory(plane) {
   const recordOf = (summary) => ({
     worker: summary.name,
     plane: plane.kind,
+    scope: plane.target,
     env: null,
     owner: null,
     ttlAtMs: null,
@@ -38683,7 +38737,7 @@ function planeInventory(plane) {
       await plane.setTags(record.worker, encodeTags(record));
     },
     async delete() {
-      throw new UsageError("a plane-backed inventory cannot forget a worker that still exists; delete the worker, or use a store-backed inventory");
+      throw new UsageError2("a plane-backed inventory cannot forget a worker that still exists; delete the worker, or use a store-backed inventory");
     }
   };
 }
@@ -38713,11 +38767,27 @@ function differences(desired, actual) {
     changes.push(`ttl ${actual.ttlAtMs} -> ${desired.ttlAtMs}`);
   return changes;
 }
+function identityOf(record) {
+  return JSON.stringify([record.plane, record.scope ?? null, record.worker]);
+}
+function indexed(records, side) {
+  const index = new Map;
+  for (const record of records) {
+    const key = identityOf(record);
+    if (index.has(key)) {
+      const where = record.scope === undefined ? record.plane : `${record.plane} ${record.scope}`;
+      throw new UsageError2(`${side} lists ${record.worker} on ${where} twice`);
+    }
+    index.set(key, record);
+  }
+  return index;
+}
 function planFleet(desired, actual, options = {}) {
-  const byName = new Map(actual.map((r) => [r.worker, r]));
+  const wanted = indexed(desired, "desired");
+  const present = indexed(actual, "actual");
   const actions = [];
-  for (const want of desired) {
-    const have = byName.get(want.worker);
+  for (const [key, want] of wanted) {
+    const have = present.get(key);
     if (have === undefined) {
       actions.push({
         kind: "create",
@@ -38727,7 +38797,7 @@ function planFleet(desired, actual, options = {}) {
       });
       continue;
     }
-    byName.delete(want.worker);
+    present.delete(key);
     const changes = differences(want, have);
     actions.push({
       kind: changes.length === 0 ? "unchanged" : "update",
@@ -38738,7 +38808,7 @@ function planFleet(desired, actual, options = {}) {
     });
   }
   if (options.prune === true) {
-    for (const leftover of byName.values()) {
+    for (const leftover of present.values()) {
       actions.push({
         kind: "delete",
         worker: leftover.worker,
@@ -39014,7 +39084,7 @@ function settingsOf(row) {
 }
 function assertWorkerName(name) {
   if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(name)) {
-    throw new chunk_4nmgzqby_UsageError(`${name} is not a usable Worker name: lower case, digits and hyphens, starting with a letter or digit, up to 63 characters`);
+    throw new chunk_s5rbp00z_UsageError2(`${name} is not a usable Worker name: lower case, digits and hyphens, starting with a letter or digit, up to 63 characters`);
   }
 }
 
@@ -39026,9 +39096,9 @@ class CloudflarePlane {
   credentialKey;
   constructor(options) {
     if (options.accountId === "")
-      throw new chunk_4nmgzqby_UsageError("no account id");
+      throw new chunk_s5rbp00z_UsageError2("no account id");
     if (options.token === "")
-      throw new chunk_4nmgzqby_UsageError("no API token");
+      throw new chunk_s5rbp00z_UsageError2("no API token");
     this.accountId = options.accountId;
     this.credentialKey = options.budgetKey ?? options.token;
     this.http = new HttpClient(() => ({ authorization: `Bearer ${options.token}` }), {
@@ -39068,7 +39138,7 @@ class CloudflarePlane {
     const body = await response.json();
     if (body.success === false || body.result === undefined) {
       const detail = (body.errors ?? []).map((e) => e.message ?? String(e.code)).join("; ");
-      throw new chunk_4nmgzqby_UsageError(`uploading ${name} was refused: ${detail === "" ? `HTTP ${response.status}` : detail}`);
+      throw new chunk_s5rbp00z_UsageError2(`uploading ${name} was refused: ${detail === "" ? `HTTP ${response.status}` : detail}`);
     }
     return {
       name,
@@ -39168,11 +39238,11 @@ class DispatchPlane {
   credentialKey;
   constructor(options) {
     if (options.accountId === "")
-      throw new UsageError("no account id");
+      throw new UsageError2("no account id");
     if (options.token === "")
-      throw new UsageError("no API token");
+      throw new UsageError2("no API token");
     if (options.namespace === "")
-      throw new UsageError("no dispatch namespace");
+      throw new UsageError2("no dispatch namespace");
     this.accountId = options.accountId;
     this.namespace = options.namespace;
     this.credentialKey = options.budgetKey ?? options.token;
@@ -39235,7 +39305,7 @@ class DispatchPlane {
     const body = await response.json();
     if (body.success === false || body.result === undefined) {
       const detail = (body.errors ?? []).map((e) => e.message ?? String(e.code)).join("; ");
-      throw new UsageError(`uploading ${name} to ${this.namespace} was refused: ${detail === "" ? `HTTP ${response.status}` : detail}`);
+      throw new UsageError2(`uploading ${name} to ${this.namespace} was refused: ${detail === "" ? `HTTP ${response.status}` : detail}`);
     }
     return { name, versionId: null, etag: body.result.etag ?? null, metadata: upload.metadata };
   }
@@ -39311,7 +39381,7 @@ class DispatchPlane {
   async setTags(name, tags) {
     assertWorkerName(name);
     if (tags.length > MAX_DISPATCH_TAGS) {
-      throw new UsageError(`Workers for Platforms allows ${MAX_DISPATCH_TAGS} tags per script and this is ${tags.length}; put the rest in the inventory store`);
+      throw new UsageError2(`Workers for Platforms allows ${MAX_DISPATCH_TAGS} tags per script and this is ${tags.length}; put the rest in the inventory store`);
     }
     await this.http.request(`${this.base}/scripts/${name}/tags`, {
       method: "PUT",
@@ -39436,32 +39506,32 @@ function logOf(row) {
 function assertSiteName(name) {
   const label = "[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
   if (name.length > 253 || !new RegExp(`^${label}(?:\\.${label})*$`).test(name)) {
-    throw new UsageError(`${name} is not a usable bastion site: a site is addressed by the host it serves, such as www.example.edu`);
+    throw new UsageError2(`${name} is not a usable bastion site: a site is addressed by the host it serves, such as www.example.edu`);
   }
 }
 function noSecrets(name) {
-  return new UsageError(`bastion secrets are host-level and reachable only from an interactive session, so ${name} has none to read through an API token; set them on the node with \`bastion secrets set\``);
+  return new UsageError2(`bastion secrets are host-level and reachable only from an interactive session, so ${name} has none to read through an API token; set them on the node with \`bastion secrets set\``);
 }
 async function readBastion(response, what) {
   let body;
   try {
     body = await response.json();
   } catch (cause) {
-    throw new TransportError(`${what}: HTTP ${response.status} with a non-JSON body`, {
+    throw new TransportError2(`${what}: HTTP ${response.status} with a non-JSON body`, {
       cause
     });
   }
   const detail = body.error?.message ?? "";
   const suffix = detail === "" ? "" : ` (${detail})`;
   if (response.status === 401 || response.status === 403) {
-    throw new AuthError(`${what}: HTTP ${response.status}, the node rejected the token${suffix}`);
+    throw new AuthError2(`${what}: HTTP ${response.status}, the node rejected the token${suffix}`);
   }
   if (response.status === 404) {
-    throw new NotFoundError(`${what}: not found${suffix}`);
+    throw new NotFoundError2(`${what}: not found${suffix}`);
   }
   if (body.ok !== true) {
     const code = body.error?.code;
-    throw new ApiError(`${what}: ${detail === "" ? `HTTP ${response.status}` : detail}`, response.status, body.error === undefined ? [] : [{ code: null, message: code === undefined ? detail : `${code}: ${detail}` }]);
+    throw new ApiError2(`${what}: ${detail === "" ? `HTTP ${response.status}` : detail}`, response.status, body.error === undefined ? [] : [{ code: null, message: code === undefined ? detail : `${code}: ${detail}` }]);
   }
   return body;
 }
@@ -39474,11 +39544,11 @@ class WorkerdPlane {
   credentialKey;
   constructor(options) {
     if (options.endpoint === "")
-      throw new UsageError("no bastion endpoint");
+      throw new UsageError2("no bastion endpoint");
     if (options.token === "")
-      throw new UsageError("no bastion API token");
+      throw new UsageError2("no bastion API token");
     if (!options.token.startsWith(BASTION_TOKEN_PREFIX)) {
-      throw new UsageError(`a bastion API token starts with ${BASTION_TOKEN_PREFIX} and this one does not; a session cookie is not one`);
+      throw new UsageError2(`a bastion API token starts with ${BASTION_TOKEN_PREFIX} and this one does not; a session cookie is not one`);
     }
     this.endpoint = options.endpoint.replace(/\/+$/, "");
     this.credentialKey = options.budgetKey ?? options.token;
@@ -39541,7 +39611,7 @@ class WorkerdPlane {
   }
   async patchSettings(name, settings) {
     if (settings.bindings !== undefined) {
-      throw new UsageError(`bastion binds a name to a target string rather than to a typed Cloudflare binding, so ${name} cannot take a binding list; write \`bindings\` on the site record instead`);
+      throw new UsageError2(`bastion binds a name to a target string rather than to a typed Cloudflare binding, so ${name} cannot take a binding list; write \`bindings\` on the site record instead`);
     }
     const current = await this.row(name);
     const payload = { ...current, host: name };
@@ -39552,7 +39622,7 @@ class WorkerdPlane {
   }
   async content(name) {
     assertSiteName(name);
-    throw new UsageError(`a bastion node does not serve a deployed bundle back, so ${name} has no content to read; keep what you deployed, or address the version by its content id`);
+    throw new UsageError2(`a bastion node does not serve a deployed bundle back, so ${name} has no content to read; keep what you deployed, or address the version by its content id`);
   }
   async listSecrets(name) {
     assertSiteName(name);
@@ -39582,7 +39652,7 @@ class WorkerdPlane {
   async rollout(name, version, percent) {
     assertSiteName(name);
     if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
-      throw new UsageError(`${percent} is not a share of a rollout; pass 0 to 100`);
+      throw new UsageError2(`${percent} is not a share of a rollout; pass 0 to 100`);
     }
     const body = await this.json(`/api/sites/${name}/rollout`, "POST", {
       version,
@@ -39606,7 +39676,7 @@ class WorkerdPlane {
       headers: { accept: "text/plain" }
     });
     if (response.status >= 400) {
-      throw new ApiError(`GET /api/metrics: HTTP ${response.status}`, response.status);
+      throw new ApiError2(`GET /api/metrics: HTTP ${response.status}`, response.status);
     }
     return response.text();
   }
@@ -39615,7 +39685,7 @@ class WorkerdPlane {
     const body = await this.call("/api/sites");
     const row = (body.sites ?? []).find((entry) => nameOf(entry) === name);
     if (row === undefined) {
-      throw new NotFoundError(`no site named ${name} on ${this.target}`);
+      throw new NotFoundError2(`no site named ${name} on ${this.target}`);
     }
     return row;
   }
@@ -39660,10 +39730,10 @@ class Resources {
   async createD1(name, options = {}) {
     const existing = await this.listD1();
     if (existing.length >= this.databaseCap) {
-      throw new UsageError(`this account already holds ${existing.length} D1 databases and the ${this.options.plan ?? "free"} plan allows ${this.databaseCap}; delete one or move to a paid plan rather than retrying`);
+      throw new UsageError2(`this account already holds ${existing.length} D1 databases and the ${this.options.plan ?? "free"} plan allows ${this.databaseCap}; delete one or move to a paid plan rather than retrying`);
     }
     if (existing.some((db) => db.name === name)) {
-      throw new UsageError(`a D1 database named ${name} already exists on this account`);
+      throw new UsageError2(`a D1 database named ${name} already exists on this account`);
     }
     const created = await this.http.request(`/accounts/${this.accountId}/d1/database`, {
       method: "POST",
@@ -39729,7 +39799,7 @@ class Resources {
 async function through(bytes, stream) {
   const source = new Response(bytes.slice().buffer).body;
   if (source === null)
-    throw new chunk_4nmgzqby_UsageError("could not stream the payload");
+    throw new chunk_s5rbp00z_UsageError2("could not stream the payload");
   return new Uint8Array(await new Response(source.pipeThrough(stream)).arrayBuffer());
 }
 var noneCodec = {
@@ -39762,7 +39832,7 @@ var REGISTRY = {
 function codecFor(name) {
   const codec = REGISTRY[name];
   if (codec === undefined)
-    throw new UsageError(`no codec named ${name}`);
+    throw new UsageError2(`no codec named ${name}`);
   return codec;
 }
 async function measureCodecs(bytes, names = ["none", "gzip", "deflate"]) {
@@ -39781,7 +39851,7 @@ async function measureCodecs(bytes, names = ["none", "gzip", "deflate"]) {
 // src/revisions/frame.ts
 var FRAME_BYTES = (/* unused pure expression or super */ null && (16 * 1024));
 async function hashFrame(bytes) {
-  const digest = await crypto.subtle.digest("SHA-256", asBinary(bytes));
+  const digest = await crypto.subtle.digest("SHA-256", asBinary2(bytes));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 async function dist_frame(bytes, size = FRAME_BYTES) {
@@ -39814,7 +39884,7 @@ var REVISION_RETENTION = 5;
 async function revisionIdOf(files) {
   const lines = [...files].sort((a, b) => a.path.localeCompare(b.path)).map((file) => `${file.path} ${file.frames.join(",")}`).join(`
 `);
-  return hashFrame(fromUtf8(lines));
+  return hashFrame(fromUtf82(lines));
 }
 
 class RevisionStore {
@@ -39885,7 +39955,7 @@ class RevisionStore {
   async read(worker, id) {
     const revision = await this.get(worker, id);
     if (revision === null) {
-      throw new UsageError(`no revision ${id} for ${worker}`);
+      throw new UsageError2(`no revision ${id} for ${worker}`);
     }
     const codec = codecFor(revision.codec);
     const modules = new Map;
@@ -39894,7 +39964,7 @@ class RevisionStore {
       for (const hash of file.frames) {
         const stored = await this.store.frames.get(hash);
         if (stored === null) {
-          throw new UsageError(`revision ${id} names frame ${hash} for ${file.path}, and the store no longer holds it`);
+          throw new UsageError2(`revision ${id} names frame ${hash} for ${file.path}, and the store no longer holds it`);
         }
         parts.push(await codec.decode(stored));
       }
@@ -39920,7 +39990,7 @@ function isForeignVersion(revision, etag) {
   return revision.etag !== etag;
 }
 function frameText(bytes) {
-  return toUtf8(bytes);
+  return toUtf82(bytes);
 }
 
 // src/revisions/compact.ts
@@ -39963,7 +40033,7 @@ async function prune(store, worker, options = {}) {
 async function planRevert(store, worker, revisionId, options = {}) {
   const revision = await store.get(worker, revisionId);
   if (revision === null) {
-    throw new UsageError(`no stored revision ${revisionId} for ${worker}; a revert rebuilds content, and the platform cannot return an old version's modules`);
+    throw new UsageError2(`no stored revision ${revisionId} for ${worker}; a revert rebuilds content, and the platform cannot return an old version's modules`);
   }
   const modules = await store.read(worker, revisionId);
   const main = String(revision.files.find((f) => f.path.endsWith(".js"))?.path ?? "index.js");
@@ -40151,7 +40221,7 @@ function workforce(options) {
 }
 
 
-//# debugId=F87A380F6B2C809564756E2164756E21
+//# debugId=86CBE50400D6781A64756E2164756E21
 //# sourceMappingURL=index.js.map
 
 ;// CONCATENATED MODULE: external "node:fs/promises"
@@ -40178,7 +40248,7 @@ async function fromDirectory(root, options = {}) {
       if (ALWAYS_IGNORED.has(entry.name))
         continue;
       const full = (0,external_node_path_namespaceObject.join)(dir, entry.name);
-      const path = normalisePath((0,external_node_path_namespaceObject.relative)(root, full).split(external_node_path_namespaceObject.sep).join("/"));
+      const path = normalisePath2((0,external_node_path_namespaceObject.relative)(root, full).split(external_node_path_namespaceObject.sep).join("/"));
       if (options.ignore?.(path) === true)
         continue;
       if (entry.isDirectory()) {
@@ -40188,21 +40258,21 @@ async function fromDirectory(root, options = {}) {
       if (!entry.isFile())
         continue;
       if (out.size >= maxFiles) {
-        throw new chunk_4nmgzqby_UsageError(`${root} holds more than ${maxFiles} files; narrow the root or raise maxFiles rather than uploading a tree`);
+        throw new chunk_s5rbp00z_UsageError2(`${root} holds more than ${maxFiles} files; narrow the root or raise maxFiles rather than uploading a tree`);
       }
       out.set(path, new Uint8Array(await (0,promises_namespaceObject.readFile)(full)));
     }
   }
   const info = await (0,promises_namespaceObject.stat)(root).catch(() => null);
   if (info === null || !info.isDirectory()) {
-    throw new chunk_4nmgzqby_UsageError(`${root} is not a directory`);
+    throw new chunk_s5rbp00z_UsageError2(`${root} is not a directory`);
   }
   await walk(root, 0);
   return out;
 }
 
 
-//# debugId=AAA854B6FAC5935264756E2164756E21
+//# debugId=6144233C746AEE3E64756E2164756E21
 //# sourceMappingURL=index.js.map
 
 ;// CONCATENATED MODULE: ./src/inputs.ts
