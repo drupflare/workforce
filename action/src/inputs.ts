@@ -6,6 +6,8 @@
  * each somebody's habit and neither is wrong.
  */
 
+import { createHash } from 'node:crypto';
+
 export type Mode = 'deploy' | 'destroy' | 'sweep';
 
 export interface Inputs {
@@ -27,10 +29,13 @@ export interface Inputs {
 	config: string | null;
 	directory: string;
 	nameTemplate: string;
+	hostnameTemplate: string | null;
+	zone: string | null;
 	ttlMs: number;
 	staleAfterMs: number;
 	access: boolean;
 	accessPolicyId: string | null;
+	accessEmails: string[];
 	cleanup: boolean;
 	comment: boolean;
 }
@@ -108,10 +113,13 @@ export function readInputs(read: Reader): Inputs {
 		config: read('config') || null,
 		directory: read('directory') || 'dist',
 		nameTemplate: either(read, 'nameTemplate', 'name-template') || '{worker}-pr-{pr}',
+		hostnameTemplate: either(read, 'hostnameTemplate', 'hostname-template') || null,
+		zone: read('zone') || null,
 		ttlMs: parseDuration(ttl === '' ? '7d' : ttl, 'ttl'),
 		staleAfterMs: parseDuration(stale === '' ? '14d' : stale, 'staleAfter'),
 		access: parseBoolean(read('access'), false),
 		accessPolicyId: either(read, 'accessPolicyId', 'access-policy-id') || null,
+		accessEmails: parseLines(either(read, 'accessEmails', 'access-emails')),
 		cleanup: parseBoolean(read('cleanup'), true),
 		comment: parseBoolean(read('comment'), true)
 	};
@@ -127,4 +135,54 @@ export function previewName(template: string, worker: string, pr: number): strin
 		.replace(/-+/g, '-')
 		.replace(/^-|-$/g, '');
 	return filled.slice(0, 63).replace(/-$/, '');
+}
+
+const DNS_LABEL = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
+
+/**
+ * A branch ref as one DNS label. Two long branches that differ only late are kept apart by the hash,
+ * which is taken from the original ref so the truncation cannot make them collide.
+ */
+export function branchLabel(branch: string, budget = 63): string {
+	const slug = branch
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-|-$/g, '');
+	if (slug === '') throw new Error(`branch "${branch}" has no characters a DNS label can use`);
+	if (slug.length <= budget) return slug;
+	if (budget < 8) {
+		throw new Error('the template leaves no room for the branch in a 63 character label');
+	}
+	const hash = createHash('sha256').update(branch).digest('hex').slice(0, 6);
+	return `${slug.slice(0, budget - 7).replace(/-$/, '')}-${hash}`;
+}
+
+/**
+ * The hostname a preview is published on. The label holding `{branch}` gets whatever room the other
+ * text in that label leaves, so the finished label never passes 63 characters.
+ */
+export function previewHostname(
+	template: string,
+	values: { branch: string; pr: number; worker: string },
+	zone: string
+): string {
+	const fill = (text: string, branch: string): string =>
+		text
+			.replace(/\{branch\}/g, branch)
+			.replace(/\{pr\}/g, String(values.pr))
+			.replace(/\{worker\}/g, values.worker);
+	const branched = template.split('.').filter((label) => label.includes('{branch}'));
+	const budget = Math.min(...branched.map((label) => 63 - fill(label, '').length));
+	const branch = branched.length === 0 ? '' : branchLabel(values.branch, budget);
+	const hostname = fill(template, branch).toLowerCase();
+
+	if (!hostname.endsWith(`.${zone}`)) {
+		throw new Error(`${hostname} is not inside ${zone}, so it cannot be published on it`);
+	}
+	for (const label of hostname.split('.')) {
+		if (!DNS_LABEL.test(label)) {
+			throw new Error(`${label} in ${hostname} is not a valid DNS label`);
+		}
+	}
+	return hostname;
 }

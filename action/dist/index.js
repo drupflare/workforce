@@ -31860,6 +31860,8 @@ var __webpack_exports__ = {};
 
 // EXPORTS
 __nccwpck_require__.d(__webpack_exports__, {
+  n7: () => (/* binding */ assertSameRepository),
+  W0: () => (/* binding */ branchOf),
   qS: () => (/* binding */ collectFromEnv),
   cK: () => (/* reexport */ planSweep),
   gz: () => (/* reexport */ previewName),
@@ -38121,6 +38123,24 @@ class Access {
     });
     return appOf(row);
   }
+  async createPolicy(input) {
+    if (input.emails.length === 0) {
+      throw new chunk_s5rbp00z_UsageError2("an allow policy needs at least one email, or it admits nobody");
+    }
+    const row = await this.http.request(`/accounts/${this.accountId}/access/policies`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        name: input.name,
+        decision: "allow",
+        include: input.emails.map((email) => ({ email: { email } }))
+      })
+    });
+    const id = String(row.id ?? "");
+    if (id === "")
+      throw new chunk_s5rbp00z_UsageError2("Access did not return a policy id");
+    return { id };
+  }
   async delete(id) {
     await this.http.send(`${this.base}/${id}`, { method: "DELETE" });
   }
@@ -40221,7 +40241,7 @@ function workforce(options) {
 }
 
 
-//# debugId=86CBE50400D6781A64756E2164756E21
+//# debugId=767BBA60F988CC3464756E2164756E21
 //# sourceMappingURL=index.js.map
 
 ;// CONCATENATED MODULE: external "node:fs/promises"
@@ -40275,6 +40295,8 @@ async function fromDirectory(root, options = {}) {
 //# debugId=6144233C746AEE3E64756E2164756E21
 //# sourceMappingURL=index.js.map
 
+// EXTERNAL MODULE: external "node:crypto"
+var external_node_crypto_ = __nccwpck_require__(7598);
 ;// CONCATENATED MODULE: ./src/inputs.ts
 /**
  * Reading the Action's inputs.
@@ -40283,6 +40305,7 @@ async function fromDirectory(root, options = {}) {
  * by changing the `uses:` line. Both spellings are accepted, because `apiToken` and `api-token` are
  * each somebody's habit and neither is wrong.
  */
+
 const DURATION = /^(\d+(?:\.\d+)?)\s*(ms|s|m|h|d|w)$/i;
 const UNIT_MS = {
     ms: 1,
@@ -40348,10 +40371,13 @@ function readInputs(read) {
         config: read('config') || null,
         directory: read('directory') || 'dist',
         nameTemplate: either(read, 'nameTemplate', 'name-template') || '{worker}-pr-{pr}',
+        hostnameTemplate: either(read, 'hostnameTemplate', 'hostname-template') || null,
+        zone: read('zone') || null,
         ttlMs: parseDuration(ttl === '' ? '7d' : ttl, 'ttl'),
         staleAfterMs: parseDuration(stale === '' ? '14d' : stale, 'staleAfter'),
         access: parseBoolean(read('access'), false),
         accessPolicyId: either(read, 'accessPolicyId', 'access-policy-id') || null,
+        accessEmails: parseLines(either(read, 'accessEmails', 'access-emails')),
         cleanup: parseBoolean(read('cleanup'), true),
         comment: parseBoolean(read('comment'), true)
     };
@@ -40367,6 +40393,49 @@ function previewName(template, worker, pr) {
         .replace(/^-|-$/g, '');
     return filled.slice(0, 63).replace(/-$/, '');
 }
+const DNS_LABEL = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
+/**
+ * A branch ref as one DNS label. Two long branches that differ only late are kept apart by the hash,
+ * which is taken from the original ref so the truncation cannot make them collide.
+ */
+function branchLabel(branch, budget = 63) {
+    const slug = branch
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+    if (slug === '')
+        throw new Error(`branch "${branch}" has no characters a DNS label can use`);
+    if (slug.length <= budget)
+        return slug;
+    if (budget < 8) {
+        throw new Error('the template leaves no room for the branch in a 63 character label');
+    }
+    const hash = (0,external_node_crypto_.createHash)('sha256').update(branch).digest('hex').slice(0, 6);
+    return `${slug.slice(0, budget - 7).replace(/-$/, '')}-${hash}`;
+}
+/**
+ * The hostname a preview is published on. The label holding `{branch}` gets whatever room the other
+ * text in that label leaves, so the finished label never passes 63 characters.
+ */
+function previewHostname(template, values, zone) {
+    const fill = (text, branch) => text
+        .replace(/\{branch\}/g, branch)
+        .replace(/\{pr\}/g, String(values.pr))
+        .replace(/\{worker\}/g, values.worker);
+    const branched = template.split('.').filter((label) => label.includes('{branch}'));
+    const budget = Math.min(...branched.map((label) => 63 - fill(label, '').length));
+    const branch = branched.length === 0 ? '' : branchLabel(values.branch, budget);
+    const hostname = fill(template, branch).toLowerCase();
+    if (!hostname.endsWith(`.${zone}`)) {
+        throw new Error(`${hostname} is not inside ${zone}, so it cannot be published on it`);
+    }
+    for (const label of hostname.split('.')) {
+        if (!DNS_LABEL.test(label)) {
+            throw new Error(`${label} in ${hostname} is not a valid DNS label`);
+        }
+    }
+    return hostname;
+}
 
 ;// CONCATENATED MODULE: ./src/preview.ts
 /**
@@ -40377,6 +40446,8 @@ function previewName(template, worker, pr) {
  * the cases and unobservable for the rest. A named Worker has its own subdomain, its own logs and its
  * own Access policy.
  */
+
+
 
 /** `wf:pr` and `wf:ttl` are what a later sweep reads; nothing else needs to be queryable */
 function previewTags(pr, ttlAtMs) {
@@ -40398,50 +40469,289 @@ function readPreviewTags(tags) {
     }
     return { pr, ttlAtMs };
 }
+/** keys a wrangler file may carry that a preview has no use for */
+const IGNORED_KEYS = new Set([
+    '$schema',
+    'name',
+    'main',
+    'routes',
+    'workers_dev',
+    'preview_urls',
+    'observability',
+    'triggers',
+    'secrets'
+]);
+// a list or object holding no entries has no binding to lose
+function isEmpty(value) {
+    if (Array.isArray(value))
+        return value.length === 0;
+    if (typeof value !== 'object' || value === null)
+        return false;
+    return Object.values(value).every(isEmpty);
+}
+function objectOf(value, where) {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        throw new Error(`${where} has to be an object`);
+    }
+    return value;
+}
+function listOf(value, where) {
+    if (!Array.isArray(value))
+        throw new Error(`${where} has to be a list`);
+    return value;
+}
+/** one entry of a binding list, with exactly these string fields and nothing else */
+function entryOf(value, where, fields, harmless = []) {
+    const given = objectOf(value, where);
+    for (const key of Object.keys(given)) {
+        if (!fields.includes(key) && !harmless.includes(key)) {
+            throw new Error(`${where} has ${key}, which a preview does not support; refusing rather than dropping it`);
+        }
+    }
+    for (const field of fields) {
+        if (typeof given[field] !== 'string')
+            throw new Error(`${where} needs ${field}`);
+    }
+    return given;
+}
+function assetsOf(value, configPath) {
+    const given = objectOf(value, 'assets');
+    for (const key of Object.keys(given)) {
+        if (key !== 'directory' && key !== 'binding') {
+            throw new Error(`assets has ${key}, which a preview does not support; refusing rather than dropping it`);
+        }
+    }
+    if (typeof given.directory !== 'string')
+        throw new Error('assets needs directory');
+    if (given.binding !== undefined && typeof given.binding !== 'string') {
+        throw new Error('assets.binding has to be a string');
+    }
+    return {
+        directory: (0,external_node_path_namespaceObject.resolve)((0,external_node_path_namespaceObject.dirname)(configPath), given.directory),
+        binding: typeof given.binding === 'string' ? given.binding : 'ASSETS'
+    };
+}
+/**
+ * Translates a rendered wrangler JSON file into what a preview uploads.
+ *
+ * Strict in both directions: a top-level key or an entry field it does not know is refused by name,
+ * because a preview that quietly lost a binding would deploy and fail at the first request that
+ * needed it.
+ */
+function translateConfig(text, configPath) {
+    let raw;
+    try {
+        raw = JSON.parse(text);
+    }
+    catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        throw new Error(`${configPath} is not JSON: ${reason}`);
+    }
+    const top = objectOf(raw, configPath);
+    const config = {
+        compatibilityDate: null,
+        compatibilityFlags: [],
+        bindings: [],
+        assets: null
+    };
+    for (const [key, value] of Object.entries(top)) {
+        if (IGNORED_KEYS.has(key))
+            continue;
+        switch (key) {
+            case 'compatibility_date':
+                if (typeof value !== 'string')
+                    throw new Error('compatibility_date has to be a string');
+                config.compatibilityDate = value;
+                break;
+            case 'compatibility_flags':
+                config.compatibilityFlags = listOf(value, key).map((flag) => {
+                    if (typeof flag !== 'string')
+                        throw new Error('compatibility_flags has to be strings');
+                    return flag;
+                });
+                break;
+            case 'd1_databases':
+                for (const item of listOf(value, key)) {
+                    // these only configure wrangler's own migrations and naming
+                    const e = entryOf(item, key, ['binding', 'database_id'], ['database_name', 'migrations_dir', 'migrations_table']);
+                    config.bindings.push({
+                        type: 'd1',
+                        name: e.binding,
+                        id: e.database_id
+                    });
+                }
+                break;
+            case 'kv_namespaces':
+                for (const item of listOf(value, key)) {
+                    const e = entryOf(item, key, ['binding', 'id']);
+                    config.bindings.push({
+                        type: 'kv_namespace',
+                        name: e.binding,
+                        namespace_id: e.id
+                    });
+                }
+                break;
+            case 'r2_buckets':
+                for (const item of listOf(value, key)) {
+                    const e = entryOf(item, key, ['binding', 'bucket_name']);
+                    config.bindings.push({
+                        type: 'r2_bucket',
+                        name: e.binding,
+                        bucket_name: e.bucket_name
+                    });
+                }
+                break;
+            case 'send_email':
+                for (const item of listOf(value, key)) {
+                    const e = entryOf(item, key, ['name']);
+                    config.bindings.push({ type: 'send_email', name: e.name });
+                }
+                break;
+            case 'vars':
+                for (const [name, text] of Object.entries(objectOf(value, key))) {
+                    if (typeof text !== 'string')
+                        throw new Error(`vars.${name} must be a string`);
+                    config.bindings.push({ type: 'plain_text', name, text });
+                }
+                break;
+            case 'assets':
+                config.assets = assetsOf(value, configPath);
+                break;
+            default:
+                if (isEmpty(value))
+                    break;
+                throw new Error(`${key} is not a key a preview supports; refusing rather than dropping its binding`);
+        }
+    }
+    assertBindings2(config.bindings);
+    return config;
+}
+/**
+ * Worker modules from a build directory. Source maps and JSON sit beside the modules in a build, and
+ * the upload should not carry them. A predicate on the path also sees directories, so this names the
+ * extensions to leave out rather than the ones to keep.
+ */
+function readModules(directory) {
+    return fromDirectory(directory, {
+        ignore: (path) => path.endsWith('.json') || path.endsWith('.map')
+    });
+}
+const EMAIL = /^[^\s@]+@[^\s@]+$/;
+async function zoneIdOf(client, zone) {
+    let zones;
+    try {
+        zones = await client.raw.request('/zones', {
+            query: { name: zone }
+        });
+    }
+    catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        throw new Error(`could not read zone ${zone} (${reason}); the token needs Zone Read on it`);
+    }
+    const id = zones.find((candidate) => candidate.name === zone)?.id;
+    if (id === undefined || id === '') {
+        throw new Error(`no zone named ${zone} is visible to this token; it needs Zone Read on ${zone}`);
+    }
+    return id;
+}
 async function deployPreview(input) {
+    const accessEmails = input.accessEmails ?? [];
+    if (input.access && input.accessPolicyId === null && accessEmails.length === 0) {
+        throw new Error('access is on, but there is no accessPolicyId and no accessEmails, so the preview would be open; name one of them');
+    }
+    const badEmail = accessEmails.find((email) => !EMAIL.test(email));
+    if (badEmail !== undefined)
+        throw new Error(`${badEmail} in accessEmails is not an email address`);
     const worker = input.client.worker(input.name);
-    const vars = Object.entries(input.vars ?? {}).map(([name, text]) => ({
-        type: 'plain_text',
-        name,
-        text
-    }));
+    const zoneId = input.hostname ? await zoneIdOf(input.client, input.hostname.zone) : null;
+    const bindings = [
+        ...(input.config?.bindings ?? []),
+        ...Object.entries(input.vars ?? {}).map(([name, text]) => ({
+            type: 'plain_text',
+            name,
+            text
+        }))
+    ];
+    if (input.assets)
+        bindings.push({ type: 'assets', name: input.assets.binding });
+    assertBindings2(bindings);
+    // the completion token goes into the script upload, so the assets are synced first
+    const assetsToken = input.assets
+        ? (await worker.assets.sync(input.assets.tree)).completionToken
+        : null;
+    const flags = input.config?.compatibilityFlags ?? [];
     const uploaded = await worker.upload({
         source: input.source,
         metadata: {
-            compatibility_date: input.compatibilityDate ?? '2026-08-01',
+            compatibility_date: input.config?.compatibilityDate ?? input.compatibilityDate ?? '2026-08-01',
+            ...(flags.length === 0 ? {} : { compatibility_flags: flags }),
             tags: previewTags(input.pr, input.ttlAtMs),
-            ...(vars.length === 0 ? {} : { bindings: vars })
+            ...(bindings.length === 0 ? {} : { bindings }),
+            ...(assetsToken === null ? {} : { assets: { jwt: assetsToken } })
         }
     });
     for (const [name, text] of Object.entries(input.secrets ?? {})) {
         await worker.secrets.put(name, text);
     }
-    const routing = new Routing(input.client.plane.http, input.accountId);
-    // exactly one URL: the subdomain on, and the per-version preview URLs off
-    const subdomain = await routing.setSubdomain(input.name, { enabled: true, previews: false });
-    const host = subdomain.enabled ? await routing.hostname(input.name) : null;
+    // Access goes on before the Worker is reachable, so there is no window where it answers ungated
     let accessAppId = null;
     if (input.access) {
-        const summary = await worker.get();
-        const workerId = summary?.id;
-        if (workerId !== null && workerId !== undefined) {
-            const app = await new Access(input.client.plane.http, input.accountId).ensure({
-                name: `preview ${input.name}`,
-                workerId,
-                ...(input.accessPolicyId === null ? {} : { policies: [input.accessPolicyId] })
-            });
-            accessAppId = app.id;
+        const workerId = (await worker.get())?.id;
+        if (workerId === null || workerId === undefined) {
+            await worker.delete();
+            throw new Error(`${input.name} has no id to attach Access to, so it was removed rather than left open`);
         }
+        const access = new Access(input.client.plane.http, input.accountId);
+        const existing = await access.forWorker(workerId);
+        if (existing === null) {
+            const policies = input.accessPolicyId === null ? [] : [input.accessPolicyId];
+            if (accessEmails.length > 0) {
+                const policy = await access.createPolicy({
+                    name: `preview ${input.name}`,
+                    emails: accessEmails
+                });
+                policies.push(policy.id);
+            }
+            accessAppId = (await access.create({ name: `preview ${input.name}`, workerId, policies })).id;
+        }
+        else {
+            accessAppId = existing.id;
+        }
+    }
+    const routing = new Routing(input.client.plane.http, input.accountId);
+    let url;
+    if (input.hostname && zoneId !== null) {
+        await routing.attachDomain({
+            hostname: input.hostname.hostname,
+            zoneId,
+            service: input.name
+        });
+        await routing.setSubdomain(input.name, { enabled: false });
+        url = `https://${input.hostname.hostname}`;
+    }
+    else {
+        // exactly one URL: the subdomain on, and the per-version preview URLs off
+        const subdomain = await routing.setSubdomain(input.name, {
+            enabled: true,
+            previews: false
+        });
+        const host = subdomain.enabled ? await routing.hostname(input.name) : null;
+        url = host === null ? null : `https://${host}`;
     }
     return {
         name: input.name,
-        url: host === null ? null : `https://${host}`,
+        url,
         versionId: uploaded.versionId,
         accessAppId
     };
 }
-/** Removes the preview and the Access application that covered it. */
+/** Removes the preview, the domains it was published on, and the Access application that covered it. */
 async function destroyPreview(input) {
+    const routing = new Routing(input.client.plane.http, input.accountId);
+    for (const domain of await routing.domains()) {
+        if (domain.service === input.name)
+            await routing.detachDomain(domain.id);
+    }
     const worker = input.client.worker(input.name);
     const summary = await worker.get();
     if (summary === null)
@@ -40454,6 +40764,21 @@ async function destroyPreview(input) {
     }
     await worker.delete();
     return { removed: true };
+}
+/** fills `{hostname}` in each var, so a Worker can be told the address it will be served on */
+function withHostname(vars, hostname) {
+    const out = {};
+    for (const [name, text] of Object.entries(vars)) {
+        if (!text.includes('{hostname}')) {
+            out[name] = text;
+            continue;
+        }
+        if (hostname === null) {
+            throw new Error(`${name} uses {hostname}, but no hostnameTemplate is set`);
+        }
+        out[name] = text.split('{hostname}').join(hostname);
+    }
+    return out;
 }
 
 ;// CONCATENATED MODULE: ./src/sweep.ts
@@ -40545,12 +40870,25 @@ function removals(decisions) {
 
 
 
+
+function branchOf(payload) {
+    return payload.pull_request?.head?.ref ?? null;
+}
+/** a fork gets no secrets, so a preview from one would deploy without the bindings it expects */
+function assertSameRepository(payload) {
+    const head = payload.pull_request?.head?.repo?.full_name;
+    const base = payload.repository?.full_name;
+    if (head === undefined || head !== base) {
+        throw new Error(`the pull request head is in ${head ?? 'no repository'}, not ${base ?? 'this repository'}; a fork gets no secrets, so this run will not deploy a preview from it`);
+    }
+}
 function readContext(read, nowMs = Date.now()) {
     const inputs = readInputs(read);
     const payload = github_context.payload;
     return {
         inputs,
         pr: payload.pull_request?.number ?? payload.number ?? null,
+        branch: branchOf(payload),
         repo: github_context.repo,
         nowMs
     };
@@ -40589,23 +40927,58 @@ function collectFromEnv(names, env) {
     }
     return out;
 }
+function relativeToWorkingDirectory(context, path) {
+    return context.inputs.workingDirectory === null
+        ? path
+        : `${context.inputs.workingDirectory}/${path}`;
+}
+async function configOf(context) {
+    if (context.inputs.config === null)
+        return null;
+    const path = relativeToWorkingDirectory(context, context.inputs.config);
+    return translateConfig(await (0,promises_namespaceObject.readFile)(path, 'utf8'), path);
+}
+function hostnameOf(context, pr) {
+    const template = context.inputs.hostnameTemplate;
+    if (template === null)
+        return null;
+    const zone = context.inputs.zone;
+    if (zone === null)
+        throw new Error('hostnameTemplate needs zone, the zone the hostname belongs to');
+    if (context.branch === null && template.includes('{branch}')) {
+        throw new Error('hostnameTemplate uses {branch}, but this run has no pull_request.head.ref');
+    }
+    const hostname = previewHostname(template, { branch: context.branch ?? '', pr, worker: context.inputs.worker ?? '' }, zone);
+    return { hostname, zone };
+}
 async function runDeploy(context) {
+    assertSameRepository(github_context.payload);
     const name = targetName(context);
+    const pr = context.pr;
     const { client, accountId } = clientFor(context.inputs);
-    const directory = context.inputs.workingDirectory === null
-        ? context.inputs.directory
-        : `${context.inputs.workingDirectory}/${context.inputs.directory}`;
+    const directory = relativeToWorkingDirectory(context, context.inputs.directory);
+    const config = await configOf(context);
+    const hostname = hostnameOf(context, pr);
     const result = await deployPreview({
         client,
         accountId,
         name,
-        source: await fromDirectory(directory),
+        source: await readModules(directory),
         ttlAtMs: context.nowMs + context.inputs.ttlMs,
-        pr: context.pr,
+        pr,
         access: context.inputs.access,
         accessPolicyId: context.inputs.accessPolicyId,
+        accessEmails: context.inputs.accessEmails,
         secrets: collectFromEnv(context.inputs.secrets, process.env),
-        vars: collectFromEnv(context.inputs.vars, process.env)
+        vars: withHostname(collectFromEnv(context.inputs.vars, process.env), hostname?.hostname ?? null),
+        config,
+        assets: config?.assets === null || config?.assets === undefined
+            ? null
+            : {
+                binding: config.assets.binding,
+                tree: await fromDirectory(config.assets.directory)
+            },
+        hostname
     });
     core.setOutput('worker-name', result.name);
     core.setOutput('version-id', result.versionId ?? '');
@@ -40715,6 +41088,8 @@ if (process.env.WORKFORCE_ACTION_TEST !== '1') {
     void run();
 }
 
+var __webpack_exports__assertSameRepository = __webpack_exports__.n7;
+var __webpack_exports__branchOf = __webpack_exports__.W0;
 var __webpack_exports__collectFromEnv = __webpack_exports__.qS;
 var __webpack_exports__planSweep = __webpack_exports__.cK;
 var __webpack_exports__previewName = __webpack_exports__.gz;
@@ -40723,6 +41098,6 @@ var __webpack_exports__readInputs = __webpack_exports__.Ko;
 var __webpack_exports__removals = __webpack_exports__.k3;
 var __webpack_exports__run = __webpack_exports__.eF;
 var __webpack_exports__targetName = __webpack_exports__.je;
-export { __webpack_exports__collectFromEnv as collectFromEnv, __webpack_exports__planSweep as planSweep, __webpack_exports__previewName as previewName, __webpack_exports__readContext as readContext, __webpack_exports__readInputs as readInputs, __webpack_exports__removals as removals, __webpack_exports__run as run, __webpack_exports__targetName as targetName };
+export { __webpack_exports__assertSameRepository as assertSameRepository, __webpack_exports__branchOf as branchOf, __webpack_exports__collectFromEnv as collectFromEnv, __webpack_exports__planSweep as planSweep, __webpack_exports__previewName as previewName, __webpack_exports__readContext as readContext, __webpack_exports__readInputs as readInputs, __webpack_exports__removals as removals, __webpack_exports__run as run, __webpack_exports__targetName as targetName };
 
 //# sourceMappingURL=index.js.map

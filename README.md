@@ -398,6 +398,17 @@ Worker `api` on pull request 7, under an account whose subdomain is `acme`, answ
 URLs off, so each preview has exactly one URL. Set `access: true` to put Cloudflare Access in front
 of it.
 
+Set `hostnameTemplate` and `zone` to publish on your own domain instead, for example
+`hostnameTemplate: '{branch}-staging-app.drupflare.com'` with `zone: drupflare.com`. The branch becomes
+one DNS label: lowercase, with every other character turned into `-`. A label longer than 63
+characters is truncated and suffixed with six hex characters of the branch hash. The Action resolves
+the zone id with `GET /zones?name=`, so the token needs Zone Read on that zone. The `workers.dev`
+subdomain is turned off for these previews. A value in `vars` may contain `{hostname}`, which the Action
+replaces with the finished hostname, so a Worker can be told the address it is served on.
+
+Access with `accessEmails` creates one allow policy naming exactly those addresses. Access with
+neither `accessPolicyId` nor `accessEmails` is refused, because the preview would be open.
+
 ### Modes
 
 `mode` runs when no `command` is given.
@@ -418,18 +429,22 @@ request in one call. `wf:ttl` is written at creation and honoured whether or not
 `cloudflare/wrangler-action`, so a workflow converts by changing the `uses:` line. Kebab-case
 spellings are accepted too.
 
-| input            | default            | what it sets                                                                |
-| ---------------- | ------------------ | --------------------------------------------------------------------------- |
-| `mode`           | `deploy`           | which preview operation to run                                              |
-| `worker`         |                    | the Worker previews are made from                                           |
-| `directory`      | `dist`             | the built Worker to upload                                                  |
-| `nameTemplate`   | `{worker}-pr-{pr}` | how a preview is named                                                      |
-| `ttl`            | `7d`               | how long a preview may live regardless of the pull request                  |
-| `staleAfter`     | `14d`              | how long a pull request may go untouched before `sweep` removes its preview |
-| `access`         | `false`            | put the preview behind Cloudflare Access                                    |
-| `accessPolicyId` |                    | an existing Access policy to attach instead of creating one                 |
-| `cleanup`        | `true`             | delete the preview when the pull request closes                             |
-| `comment`        | `true`             | comment the preview URL on the pull request                                 |
+| input              | default            | what it sets                                                                |
+| ------------------ | ------------------ | --------------------------------------------------------------------------- |
+| `mode`             | `deploy`           | which preview operation to run                                              |
+| `worker`           |                    | the Worker previews are made from                                           |
+| `directory`        | `dist`             | the built Worker to upload                                                  |
+| `nameTemplate`     | `{worker}-pr-{pr}` | how a preview is named                                                      |
+| `hostnameTemplate` |                    | the hostname a preview is published on; empty keeps `workers.dev`           |
+| `zone`             |                    | the zone the hostname belongs to; required with `hostnameTemplate`          |
+| `config`           |                    | a rendered wrangler JSON file for bindings, flags and assets                |
+| `ttl`              | `7d`               | how long a preview may live regardless of the pull request                  |
+| `staleAfter`       | `14d`              | how long a pull request may go untouched before `sweep` removes its preview |
+| `access`           | `false`            | put the preview behind Cloudflare Access                                    |
+| `accessPolicyId`   |                    | an existing Access policy to attach instead of creating one                 |
+| `accessEmails`     |                    | addresses allowed through Access, newline separated                         |
+| `cleanup`          | `true`             | delete the preview when the pull request closes                             |
+| `comment`          | `true`             | comment the preview URL on the pull request                                 |
 
 Outputs are `command-output`, `command-stderr`, `deployment-url`, `worker-name`, `version-id` and
 `swept`.

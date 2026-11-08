@@ -77,6 +77,15 @@ inputs:
   accessPolicyId:
     description: 'An existing Access policy to attach instead of creating one'
     required: false
+  accessEmails:
+    description: 'Addresses allowed through Access, separated by newlines. One allow policy is created for them.'
+    required: false
+  hostnameTemplate:
+    description: 'The hostname a preview is published on, with `{branch}`, `{pr}` and `{worker}` filled in. Empty keeps the workers.dev subdomain.'
+    required: false
+  zone:
+    description: 'The zone the hostname belongs to, such as `drupflare.com`. Required with `hostnameTemplate`.'
+    required: false
   cleanup:
     description: 'Delete the preview Worker when the pull request closes'
     required: false
