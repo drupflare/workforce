@@ -7,6 +7,7 @@
  * custom domain.
  */
 
+import { UsageError } from './client/errors.js';
 import type { HttpClient } from './client/fetch.js';
 import { collect } from './client/paginate.js';
 
@@ -81,6 +82,28 @@ export class Access {
 			})
 		});
 		return appOf(row);
+	}
+
+	/** a reusable allow policy admitting exactly these addresses */
+	async createPolicy(input: { name: string; emails: string[] }): Promise<{ id: string }> {
+		if (input.emails.length === 0) {
+			throw new UsageError('an allow policy needs at least one email, or it admits nobody');
+		}
+		const row = await this.http.request<{ id?: string }>(
+			`/accounts/${this.accountId}/access/policies`,
+			{
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					name: input.name,
+					decision: 'allow',
+					include: input.emails.map((email) => ({ email: { email } }))
+				})
+			}
+		);
+		const id = String(row.id ?? '');
+		if (id === '') throw new UsageError('Access did not return a policy id');
+		return { id };
 	}
 
 	async delete(id: string): Promise<void> {

@@ -68,4 +68,31 @@ describe('Access', () => {
 		expect((await a.ensure({ name: 'preview', workerId: 'w1' })).id).toBe('new');
 		expect(calls.length).toBe(2);
 	});
+
+	it('createPolicy makes a reusable allow policy with one email include per address', async () => {
+		const { access: a, calls } = access([{ body: envelope({ id: 'pol-1', name: 'p' }) }]);
+		const policy = await a.createPolicy({ name: 'p', emails: ['a@x.com', 'b@x.com'] });
+		expect(policy.id).toBe('pol-1');
+		expect(calls[0]?.url).toContain('/accounts/acct/access/policies');
+		expect(JSON.parse(String(calls[0]?.body))).toEqual({
+			name: 'p',
+			decision: 'allow',
+			include: [{ email: { email: 'a@x.com' } }, { email: { email: 'b@x.com' } }]
+		});
+	});
+
+	it('createPolicy refuses an empty list rather than making a policy that admits nobody', async () => {
+		const { access: a, calls } = access([]);
+		await expect(a.createPolicy({ name: 'p', emails: [] })).rejects.toThrow(
+			/at least one email/
+		);
+		expect(calls.length).toBe(0);
+	});
+
+	it('createPolicy refuses a response with no id, because an empty id attaches nothing', async () => {
+		const { access: a } = access([{ body: envelope({ name: 'p' }) }]);
+		await expect(a.createPolicy({ name: 'p', emails: ['a@x.com'] })).rejects.toThrow(
+			/did not return a policy id/
+		);
+	});
 });
