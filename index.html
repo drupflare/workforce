@@ -255,6 +255,15 @@ account's <code>workers.dev</code> subdomain:</p>
 <code>https://api-pr-7.acme.workers.dev</code>. The Action enables that hostname and turns per-version preview
 URLs off, so each preview has exactly one URL. Set <code>access: true</code> to put Cloudflare Access in front
 of it.</p>
+<p>Set <code>hostnameTemplate</code> and <code>zone</code> to publish on your own domain instead, for example
+<code>hostnameTemplate: '{branch}-staging-app.drupflare.com'</code> with <code>zone: drupflare.com</code>. The branch becomes
+one DNS label: lowercase, with every other character turned into <code>-</code>. A label longer than 63
+characters is truncated and suffixed with six hex characters of the branch hash. The Action resolves
+the zone id with <code>GET /zones?name=</code>, so the token needs Zone Read on that zone. The <code>workers.dev</code>
+subdomain is turned off for these previews. A value in <code>vars</code> may contain <code>{hostname}</code>, which the Action
+replaces with the finished hostname, so a Worker can be told the address it is served on.</p>
+<p>Access with <code>accessEmails</code> creates one allow policy naming exactly those addresses. Access with
+neither <code>accessPolicyId</code> nor <code>accessEmails</code> is refused, because the preview would be open.</p>
 <h3 id="modes" class="tsd-anchor-link">Modes<a href="#modes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p><code>mode</code> runs when no <code>command</code> is given.</p>
 <table>
@@ -320,6 +329,21 @@ spellings are accepted too.</p>
 <td>how a preview is named</td>
 </tr>
 <tr>
+<td><code>hostnameTemplate</code></td>
+<td></td>
+<td>the hostname a preview is published on; empty keeps <code>workers.dev</code></td>
+</tr>
+<tr>
+<td><code>zone</code></td>
+<td></td>
+<td>the zone the hostname belongs to; required with <code>hostnameTemplate</code></td>
+</tr>
+<tr>
+<td><code>config</code></td>
+<td></td>
+<td>a rendered wrangler JSON file for bindings, flags and assets</td>
+</tr>
+<tr>
 <td><code>ttl</code></td>
 <td><code>7d</code></td>
 <td>how long a preview may live regardless of the pull request</td>
@@ -338,6 +362,11 @@ spellings are accepted too.</p>
 <td><code>accessPolicyId</code></td>
 <td></td>
 <td>an existing Access policy to attach instead of creating one</td>
+</tr>
+<tr>
+<td><code>accessEmails</code></td>
+<td></td>
+<td>addresses allowed through Access, newline separated</td>
 </tr>
 <tr>
 <td><code>cleanup</code></td>
