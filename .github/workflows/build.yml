@@ -55,13 +55,13 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 'latest'
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
       - uses: actions/setup-node@v7
         with:
           node-version: '26'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@drupflare'
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
       - name: Build
         run: bun run --cwd core build
       - name: Version with the Commit Hash
