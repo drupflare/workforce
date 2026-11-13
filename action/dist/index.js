@@ -40854,6 +40854,11 @@ function planSweep(input) {
 function removals(decisions) {
     return decisions.filter((decision) => decision.remove);
 }
+// the account can hold Workers the plane's name rule refuses, such as one with an underscore; the
+// action never creates those, so a sweep skips them instead of failing on the first one it reads
+function isPreviewName(name) {
+    return /^[a-z0-9][a-z0-9-]{0,62}$/.test(name);
+}
 
 ;// CONCATENATED MODULE: ./src/index.ts
 /**
@@ -41006,6 +41011,8 @@ async function runSweep(context) {
     const workers = await client.list();
     const previews = [];
     for (const worker of workers) {
+        if (!isPreviewName(worker.name))
+            continue;
         const summary = await worker.get();
         if (summary === null)
             continue;

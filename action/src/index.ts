@@ -21,7 +21,13 @@ import {
 	withHostname,
 	type PreviewConfig
 } from './preview.js';
-import { planSweep, removals, type PreviewRecord, type PullRequestState } from './sweep.js';
+import {
+	isPreviewName,
+	planSweep,
+	removals,
+	type PreviewRecord,
+	type PullRequestState
+} from './sweep.js';
 
 export interface RunContext {
 	inputs: Inputs;
@@ -203,6 +209,7 @@ async function runSweep(context: RunContext): Promise<void> {
 	const workers = await client.list();
 	const previews: PreviewRecord[] = [];
 	for (const worker of workers) {
+		if (!isPreviewName(worker.name)) continue;
 		const summary = await worker.get();
 		if (summary === null) continue;
 		const { pr, ttlAtMs } = readPreviewTags(summary.tags);

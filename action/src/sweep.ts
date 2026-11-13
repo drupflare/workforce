@@ -107,3 +107,9 @@ export function planSweep(input: SweepInput): SweepDecision[] {
 export function removals(decisions: readonly SweepDecision[]): SweepDecision[] {
 	return decisions.filter((decision) => decision.remove);
 }
+
+// the account can hold Workers the plane's name rule refuses, such as one with an underscore; the
+// action never creates those, so a sweep skips them instead of failing on the first one it reads
+export function isPreviewName(name: string): boolean {
+	return /^[a-z0-9][a-z0-9-]{0,62}$/.test(name);
+}

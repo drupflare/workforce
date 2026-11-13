@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { planSweep, removals, type PreviewRecord, type PullRequestState } from '../src/sweep.js';
+import {
+	isPreviewName,
+	planSweep,
+	removals,
+	type PreviewRecord,
+	type PullRequestState
+} from '../src/sweep.js';
 
 const DAY = 86_400_000;
 const NOW = 1_800_000_000_000;
@@ -95,5 +101,16 @@ describe('planSweep', () => {
 		});
 		expect(decisions.every((d) => d.detail !== '')).toBe(true);
 		expect(removals(decisions).map((d) => d.worker)).toEqual(['b']);
+	});
+});
+
+describe('isPreviewName', () => {
+	it('accepts names the plane can read and refuses the rest, so one odd Worker cannot stop a sweep', () => {
+		expect(isPreviewName('api-pr-12')).toBe(true);
+		expect(isPreviewName('uptimeflare_worker')).toBe(false);
+		expect(isPreviewName('Mixed')).toBe(false);
+		expect(isPreviewName('-leading')).toBe(false);
+		expect(isPreviewName('')).toBe(false);
+		expect(isPreviewName('a'.repeat(64))).toBe(false);
 	});
 });
