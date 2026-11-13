@@ -49,7 +49,7 @@
 		"prettier:check": "prettier --check ."
 	},
 	"dependencies": {
-		"node-diff3": "^3.2.1"
+		"node-diff3": "^4.0.0"
 	},
 	"peerDependencies": {
 		"edgeport": "^1.0.6"

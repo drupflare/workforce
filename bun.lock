@@ -33,7 +33,7 @@
       "name": "@drupflare/workforce",
       "version": "0.3.0",
       "dependencies": {
-        "node-diff3": "^3.2.1",
+        "node-diff3": "^4.0.0",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "^5.20260811.1",
@@ -445,7 +445,7 @@
 
     "nanoid": ["nanoid@3.3.19", "", { "bin": { "nanoid": "bin/nanoid.cjs" } }, "sha512-Y2tUNy4ouw6tq5oDSKeQYGOyhkUBhNOcGV/02KC+6kd9eDGqdZd++mjMiIDilrBYvjEnCYvVtsuHCuP+okSfug=="],
 
-    "node-diff3": ["node-diff3@3.2.1", "", {}, "sha512-eKZcJ8RtMQ3cIaA15EgmtwG927fYnRlhtdA4Q9HAcCpAZPQhhU2XptnTH9GeAkMiX2bAXxlJSAFa9shFbztPgw=="],
+    "node-diff3": ["node-diff3@4.0.0", "", {}, "sha512-U6ROYD85/70rtvHRa3mmB2PUHNT9R+K3Oo5WLnCtVl3aZ2GPY+lgB+vrIfwy5P/fr+Avng+loYDgk+MglPgwMQ=="],
 
     "obug": ["obug@2.2.1", "", {}, "sha512-XrsrhT5sybtKI6wakr2SPOlGZWWYbUXZ7a0jT8/QOeAPau+1X/bSegNe5YR75oJmEZQbKningirmGOEJCIk61Q=="],
 
